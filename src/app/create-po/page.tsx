@@ -346,7 +346,7 @@ export default function CreatePOPage() {
           
           // Map taxes from API response
           if (poContext.taxes && poContext.taxes.length > 0) {
-            const newTaxes = poContext.taxes.slice(0, 3).map(tax => ({
+            const newTaxes = poContext.taxes.slice(0, 3).map((tax: any) => ({
               label: tax.label || "",
               value: tax.value ? tax.value.toString() : "",
             }));

@@ -59,6 +59,8 @@ interface VendorCell {
   vendorName?: string;
 }
 
+type Tax = { label?: string; value?: string | number };
+
 interface SpecificationRow {
   specificationId: number;
   specificationName: string;
@@ -346,7 +348,7 @@ export default function CreatePOPage() {
           
           // Map taxes from API response
           if (poContext.taxes && poContext.taxes.length > 0) {
-            const newTaxes = poContext.taxes.slice(0, 3).map((tax: any) => ({
+            const newTaxes = poContext.taxes.slice(0, 3).map((tax: Tax) => ({
               label: tax.label || "",
               value: tax.value ? tax.value.toString() : "",
             }));
@@ -359,7 +361,7 @@ export default function CreatePOPage() {
             setTaxes(newTaxes);
             
             // Show taxes section if any taxes exist
-            const hasTaxes = newTaxes.some(tax => tax.label || tax.value);
+            const hasTaxes = newTaxes.some((tax: Tax) => tax.label || tax.value);
             if (hasTaxes) {
               setShowTaxes(true);
             }
@@ -1089,7 +1091,7 @@ export default function CreatePOPage() {
 
     // Tax pair validation: If either Tax Name OR Tax Value is filled, BOTH must be filled
     if (showTaxes) {
-      const incompleteTaxRows = taxes.filter(tax => {
+      const incompleteTaxRows = taxes.filter((tax: Tax) => {
         const hasLabel = tax.label && tax.label.trim() !== '';
         const hasValue = tax.value && tax.value.trim() !== '';
         // Return true if one is filled but not both
@@ -1145,8 +1147,8 @@ export default function CreatePOPage() {
     // Build taxes array
     const taxesArray = showTaxes
       ? taxes
-          .filter((tax) => tax.label && tax.value)
-          .map((tax) => ({
+          .filter((tax: Tax) => tax.label && tax.value)
+          .map((tax: Tax) => ({
             label: tax.label,
             value: parseFloat(tax.value) || 0,
           }))

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,7 @@ import ViewEditApprovalForm from '@/components/approvals/view-edit-approval-form
 import { approvalsService } from '@/services/approvals-service';
 import { logger } from '@/utils/logger';
 
-export default function ViewEditApprovalPage() {
+function ViewEditApprovalPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -109,5 +109,13 @@ export default function ViewEditApprovalPage() {
         </div>
       </MainLayout>
     </ProtectedRoute>
+  );
+}
+
+export default function ViewEditApprovalPage() {
+  return (
+    <Suspense fallback={null}>
+      <ViewEditApprovalPageContent />
+    </Suspense>
   );
 }

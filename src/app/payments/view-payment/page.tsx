@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ViewPaymentContent from '@/components/payments/view-payment-content';
 import { MainLayout } from '@/components/layout/main-layout';
 
-export default function ViewPaymentPage() {
+function ViewPaymentPageContent() {
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get('invoiceId');
 
@@ -25,5 +26,13 @@ export default function ViewPaymentPage() {
     <MainLayout>
       <ViewPaymentContent invoiceBillAdvPaymentId={parseInt(invoiceId)} />
     </MainLayout>
+  );
+}
+
+export default function ViewPaymentPage() {
+  return (
+    <Suspense fallback={null}>
+      <ViewPaymentPageContent />
+    </Suspense>
   );
 }

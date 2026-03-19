@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -51,7 +51,7 @@ interface SpecificationTableData {
   specifications: SpecificationRow[];
 }
 
-export default function ViewQuotationPage() {
+function ViewQuotationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -744,5 +744,13 @@ export default function ViewQuotationPage() {
         </div>
       )}
     </MainLayout>
+  );
+}
+
+export default function ViewQuotationPage() {
+  return (
+    <Suspense fallback={null}>
+      <ViewQuotationPageContent />
+    </Suspense>
   );
 }

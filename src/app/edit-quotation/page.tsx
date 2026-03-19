@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -73,7 +73,7 @@ interface EligibleVendor {
   vendorName: string;
 }
 
-export default function EditQuotationPage() {
+function EditQuotationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -1825,5 +1825,13 @@ export default function EditQuotationPage() {
         </div>
       )}
     </MainLayout>
+  );
+}
+
+export default function EditQuotationPage() {
+  return (
+    <Suspense fallback={null}>
+      <EditQuotationPageContent />
+    </Suspense>
   );
 }

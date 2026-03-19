@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,7 +68,7 @@ interface QuotationSpecTableData {
   specifications: SpecificationRow[];
 }
 
-export default function ViewPOPage() {
+function ViewPOPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -2400,5 +2400,13 @@ console.log("templates", formData.poTypeName)
         variant="danger"
       />
     </MainLayout>
+  );
+}
+
+export default function ViewPOPage() {
+  return (
+    <Suspense fallback={null}>
+      <ViewPOPageContent />
+    </Suspense>
   );
 }

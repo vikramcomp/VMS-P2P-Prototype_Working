@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,7 +76,7 @@ interface FormData {
   poDispatch: string;
 }
 
-export default function ViewEditWorkflowPage() {
+function ViewEditWorkflowPageContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -1627,5 +1627,13 @@ export default function ViewEditWorkflowPage() {
         </form>
       </div>
     </MainLayout>
+  );
+}
+
+export default function ViewEditWorkflowPage() {
+  return (
+    <Suspense fallback={null}>
+      <ViewEditWorkflowPageContent />
+    </Suspense>
   );
 }

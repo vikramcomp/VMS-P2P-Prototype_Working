@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, usePathname, useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, RotateCcw, Save, Loader2, Eye, X } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -15,7 +15,7 @@ import { invoicesService } from '@/services/invoices-service';
 import type { InvoiceContext, PaymentDetails } from '@/types/invoices';
 import { envConfig } from '@/config/env-validation';
 
-export default function InvoicePage({ isTesting = false }: { isTesting?: boolean } = {}) {
+function InvoicePageContent({ isTesting = false }: { isTesting?: boolean } = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
@@ -1181,5 +1181,13 @@ export default function InvoicePage({ isTesting = false }: { isTesting?: boolean
         )}
       </MainLayout>
     </ProtectedRoute>
+  );
+}
+
+export default function InvoicePage(props: { isTesting?: boolean } = {}) {
+  return (
+    <Suspense fallback={null}>
+      <InvoicePageContent {...props} />
+    </Suspense>
   );
 }

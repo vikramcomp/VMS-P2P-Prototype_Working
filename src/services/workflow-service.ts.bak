@@ -1,0 +1,379 @@
+import { apiClient } from './api-client';
+
+/**
+ * Workflow API Service
+ * Handles workflow-related API operations
+ */
+
+export interface WorkflowListRequest {
+  OldWorkflowOnly: boolean;
+  SortType: string;
+  SearchText: string;
+  SortColumn: string;
+  SearchColumn: string;
+  PageSize: number;
+  PageNumber: number;
+}
+
+export interface WorkflowItem {
+  WorkflowId: number;
+  CategoryName: string;
+  ServiceName: string;
+  RoleName: string;
+  VendorManager: string;
+  PaymentLocation: string;
+  ComparisionFactor: string;
+  QuoteValue: string;
+  Approver1: string;
+  Approver2: string;
+  Approver3: string;
+  Approver4: string;
+  FinanceHead: string;
+  CreatedOn: string;
+  Status: number;
+  POGenerator: string;
+  POVerifier: string;
+  PODespatcher: string;
+  PriceLabel: string;
+  PriceName: string;
+  StatusName: string;
+}
+
+export interface WorkflowApiResponse {
+  Data: {
+    Records: WorkflowItem[]; // Changed from Items to Records to match API
+    TotalRecords: number;
+    TotalPages: number;
+    PageSize: number;
+    CurrentPage: number;
+    SortColumn: string;
+    SortType: string;
+  };
+  Message: string;
+  IsSuccess: boolean;
+}
+
+export interface WorkflowListResponse {
+  items: FormattedWorkflowItem[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  success: boolean;
+  message?: string;
+}
+
+// Formatted version for UI consumption
+export interface FormattedWorkflowItem {
+  id: number;
+  purchasingGroup: string;
+  serviceName: string;
+  requester: string;
+  quotationProvider: string;
+  paymentMode: string;
+  approveStatus: string;
+  financeHead: string;
+  poGenerator: string;
+  poVerification: string;
+  poDispatch: string;
+  status: string;
+  function: string;
+}
+
+// Helper function to safely get values with multiple possible field names
+function getValueSafely(obj: any, possibleKeys: string[], defaultValue: any): any {
+  if (!obj || typeof obj !== 'object') return defaultValue;
+  
+  for (const key of possibleKeys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      return obj[key];
+    }
+  }
+  
+  return defaultValue;
+}
+
+// Helper function to format approvers
+function formatApprovers(item: any): string {
+  if (!item) return '';
+  
+  const approvers = [
+    item.Approver1, item.Approver2, item.Approver3, item.Approver4,
+    item.approver1, item.approver2, item.approver3, item.approver4
+  ].filter(approver => approver && typeof approver === 'string' && approver.trim() !== '' && approver.trim() !== ' ');
+  
+  return approvers.length > 0 ? approvers.join(', ') : (item.approveStatus || '');
+}
+
+// Helper function to create a default error item
+function createErrorItem(): FormattedWorkflowItem {
+  return {
+    id: 0,
+    purchasingGroup: 'Error',
+    serviceName: 'Error mapping data',
+    requester: '',
+    quotationProvider: '',
+    paymentMode: '',
+    approveStatus: '',
+    financeHead: '',
+    poGenerator: '',
+    poVerification: '',
+    poDispatch: '',
+    status: '',
+    function: ''
+  };
+}
+
+/**
+ * Fetch workflow list with POST method
+ * @param oldWorkflowOnly - Flag to determine if fetching old workflows
+ * @param page - Page number to fetch (defaults to 1)
+ * @param pageSize - Number of items per page (defaults to 50)
+ * @returns Promise<WorkflowListResponse>
+ */
+export async function getWorkflowList(
+  oldWorkflowOnly: boolean = false,
+  page: number = 1,
+  pageSize: number = 50
+): Promise<WorkflowListResponse> {
+  try {
+    console.log(`Fetching workflows: oldWorkflowOnly=${oldWorkflowOnly}, page=${page}, pageSize=${pageSize}`);
+    
+    const response = await apiClient.post(
+      '/workflow-editor/list',
+      {
+        OldWorkflowOnly: oldWorkflowOnly,
+        SortType: 'asc',
+        SearchText: '',
+        SortColumn: 'serviceName',
+        SearchColumn: 'serviceName',
+        PageSize: pageSize,
+        PageNumber: page
+      }
+    );
+
+    console.log('API Response:', response.data); // Debug log to see actual structure
+
+    // Check if response exists and has data
+    if (!response || !response.data) {
+      console.error('Empty or null API response');
+      throw new Error('Empty response from API');
+    }
+
+    const responseData = response.data as any;
+    
+    // More robust approach to finding the workflow records
+    let records: any[] = [];
+    let totalRecords = 0;
+    let totalPages = 1;
+    let currentPage = page;
+    let isSuccess = true;
+    let message = 'success';
+    
+    // Try to find records using various potential paths in the response
+    if (responseData && responseData.Data && responseData.Data.Records && Array.isArray(responseData.Data.Records)) {
+      // Primary expected structure: { Data: { Records: [...] }, Message: "...", IsSuccess: true }
+      records = responseData.Data.Records;
+      totalRecords = responseData.Data.TotalRecords || records.length;
+      totalPages = responseData.Data.TotalPages || Math.ceil(totalRecords / pageSize);
+      currentPage = responseData.Data.CurrentPage || page;
+      isSuccess = responseData.IsSuccess !== false;
+      message = responseData.Message || 'success';
+      console.log('Found records in Data.Records:', records.length);
+    } else if (responseData && Array.isArray(responseData.Records)) {
+      // Alternative structure: { Records: [...], TotalRecords: ..., ... }
+      records = responseData.Records;
+      totalRecords = responseData.TotalRecords || records.length;
+      totalPages = responseData.TotalPages || Math.ceil(totalRecords / pageSize);
+      currentPage = responseData.CurrentPage || page;
+      isSuccess = responseData.IsSuccess !== false;
+      message = responseData.Message || 'success';
+      console.log('Found records in direct Records:', records.length);
+    } else if (responseData && Array.isArray(responseData.Items)) {
+      // Legacy fallback: { Items: [...], TotalRecords: ..., ... }
+      records = responseData.Items;
+      totalRecords = responseData.TotalRecords || records.length;
+      totalPages = responseData.TotalPages || Math.ceil(totalRecords / pageSize);
+      currentPage = responseData.CurrentPage || page;
+      isSuccess = responseData.IsSuccess !== false;
+      message = responseData.Message || 'success';
+      console.log('Found records in Items:', records.length);
+    } else if (responseData && responseData.Data && Array.isArray(responseData.Data)) {
+      // Data array fallback: { Data: [...] }
+      records = responseData.Data;
+      totalRecords = records.length;
+      totalPages = Math.ceil(totalRecords / pageSize);
+      isSuccess = responseData.IsSuccess !== false;
+      message = responseData.Message || 'success';
+      console.log('Found records in Data array:', records.length);
+    } else if (Array.isArray(responseData)) {
+      // Direct array fallback: [...]
+      records = responseData;
+      totalRecords = records.length;
+      totalPages = Math.ceil(totalRecords / pageSize);
+      console.log('Found records in direct array:', records.length);
+    } else if (responseData && typeof responseData === 'object') {
+      // Last resort: try to extract any array that might contain workflow data
+      const possibleArrays = Object.values(responseData).filter(val => Array.isArray(val));
+      if (possibleArrays.length > 0) {
+        // Use the largest array found as it's most likely to be our data
+        records = possibleArrays.reduce((a, b) => a.length > b.length ? a : b, []);
+        totalRecords = records.length;
+        totalPages = Math.ceil(totalRecords / pageSize);
+        console.log('Using largest array found in response:', records.length);
+      } else {
+        // If we can't find any arrays, look for objects that might contain arrays
+        const nestedObjects = Object.values(responseData).filter(val => typeof val === 'object' && val !== null && !Array.isArray(val));
+        
+        for (const obj of nestedObjects) {
+          const nestedArrays = Object.values(obj as object).filter(val => Array.isArray(val));
+          if (nestedArrays.length > 0) {
+            records = nestedArrays.reduce((a, b) => a.length > b.length ? a : b, []) as any[];
+            totalRecords = records.length;
+            totalPages = Math.ceil(totalRecords / pageSize);
+            console.log('Found records in nested object array:', records.length);
+            break;
+          }
+        }
+        
+        if (records.length === 0) {
+          console.error('No arrays found in response:', responseData);
+          // Instead of throwing, return an empty array
+          records = [];
+          console.warn('Returning empty records array as fallback');
+        }
+      }
+    } else {
+      console.error('Completely unexpected API response structure:', responseData);
+      // Instead of throwing, return an empty array
+      records = [];
+      console.warn('Returning empty records array as fallback due to unexpected structure');
+    }
+
+    // Map records to UI format with more defensive coding
+    const formattedItems: FormattedWorkflowItem[] = records.map((item: any) => {
+      try {
+        // Skip null or undefined items
+        if (!item) return createErrorItem();
+        
+        // Extract all possible field names from the item for debugging
+        if (item && typeof item === 'object') {
+          console.log('Sample record fields:', Object.keys(item).slice(0, 5), '...');
+        }
+        
+        return {
+          id: getValueSafely(item, ['WorkflowId', 'workflowId', 'id'], 0),
+          purchasingGroup: getValueSafely(item, ['CategoryName', 'categoryName', 'purchasingGroup'], ''),
+          serviceName: getValueSafely(item, ['ServiceName', 'serviceName'], ''),
+          requester: getValueSafely(item, ['RoleName', 'roleName', 'requester'], ''),
+          quotationProvider: getValueSafely(item, ['VendorManager', 'vendorManager', 'quotationProvider'], ''),
+          paymentMode: getValueSafely(item, ['PriceName', 'priceName', 'paymentMode'], ''),
+          approveStatus: formatApprovers(item),
+          financeHead: getValueSafely(item, ['FinanceHead', 'financeHead'], ''),
+          poGenerator: getValueSafely(item, ['POGenerator', 'poGenerator'], ''),
+          poVerification: getValueSafely(item, ['POVerifier', 'poVerifier', 'poVerification'], ''),
+          poDispatch: getValueSafely(item, ['PODespatcher', 'poDespatcher', 'poDispatch'], ''),
+          status: getValueSafely(item, ['StatusName', 'statusName', 'status'], ''),
+          function: ''
+        };
+      } catch (mapError) {
+        console.error('Error mapping workflow item:', mapError, item);
+        return createErrorItem();
+      }
+    });
+    
+    return {
+      items: formattedItems,
+      totalCount: totalRecords,
+      totalPages: totalPages,
+      currentPage: currentPage,
+      pageSize: pageSize,
+      success: isSuccess,
+      message: message
+    };
+  } catch (error) {
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error('Error fetching workflow list:', error.message, error);
+    } else {
+      console.error('Unknown error fetching workflow list:', error);
+    }
+    throw new Error('Failed to fetch workflow list: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
+}
+
+// Helper function to safely get values with multiple possible field names
+function getValueSafely(obj: any, possibleKeys: string[], defaultValue: any): any {
+  if (!obj || typeof obj !== 'object') return defaultValue;
+  
+  for (const key of possibleKeys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      return obj[key];
+    }
+  }
+  
+  return defaultValue;
+}
+
+// Helper function to format approvers
+function formatApprovers(item: any): string {
+  if (!item) return '';
+  
+  const approvers = [
+    item.Approver1, item.Approver2, item.Approver3, item.Approver4,
+    item.approver1, item.approver2, item.approver3, item.approver4
+  ].filter(approver => approver && typeof approver === 'string' && approver.trim() !== '' && approver.trim() !== ' ');
+  
+  return approvers.length > 0 ? approvers.join(', ') : (item.approveStatus || '');
+}
+
+// Helper function to create a default error item
+function createErrorItem(): FormattedWorkflowItem {
+  return {
+    id: 0,
+    purchasingGroup: 'Error',
+    serviceName: 'Error mapping data',
+    requester: '',
+    quotationProvider: '',
+    paymentMode: '',
+    approveStatus: '',
+    financeHead: '',
+    poGenerator: '',
+    poVerification: '',
+    poDispatch: '',
+    status: '',
+    function: ''
+  };
+
+    // Extract pagination information with fallbacks
+    const totalRecords = apiData.TotalRecords || formattedItems.length;
+    const totalPages = apiData.TotalPages || Math.ceil(totalRecords / 50);
+    const currentPage = apiData.CurrentPage || 1;
+    
+    // Log pagination info for debugging
+    console.log('API Pagination:', {
+      totalRecords,
+      totalPages,
+      currentPage,
+      pageSize: 50
+    });
+    
+    return {
+      items: formattedItems,
+      totalCount: totalRecords,
+      totalPages: totalPages,
+      currentPage: currentPage,
+      pageSize: 50,
+      success: true,
+      message: message
+    };
+  } catch (error) {
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error('Error fetching workflow list:', error.message, error);
+    } else {
+      console.error('Unknown error fetching workflow list:', error);
+    }
+    throw new Error('Failed to fetch workflow list');
+  }
+}

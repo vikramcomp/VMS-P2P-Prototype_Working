@@ -1,0 +1,16 @@
+﻿
+  
+> FAIL 
+src/hooks/__tests__/use-groups.test.ts
+    ΓùÅ useGroups ΓÇ║ exportGroups ΓÇ║ 
+should export groups successfully
+  
+System.Management.Automation.RemoteException
+  
+System.Management.Automation.RemoteException
+> Test Suites: 1 failed, 1 total
+> Tests:       1 failed, 19 passed, 20 total
+  Snapshots:   0 total
+  Time:        4.841 s
+
+

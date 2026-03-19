@@ -1,0 +1,43 @@
+﻿
+        ΓêÜ should handle delete error (67 
+ms)
+      deleteMultipleGroups
+        ΓêÜ should delete multiple groups 
+successfully (85 ms)
+      changeGroupStatus
+        ΓêÜ should change group status 
+successfully (83 ms)
+>     exportGroups
+>       ├ù should export groups 
+successfully (92 ms)
+        ΓêÜ should handle export error (64 
+ms)
+      setSearchParams
+        ΓêÜ should update search params (4 
+ms)
+  
+System.Management.Automation.RemoteException
+>   ΓùÅ useGroups ΓÇ║ exportGroups ΓÇ║ 
+should export groups successfully
+  
+System.Management.Automation.RemoteException
+      expect(jest.fn()).toHaveBeenCalled()
+  
+System.Management.Automation.RemoteException
+      Expected number of calls: >= 1
+      Received number of calls:    0
+  
+System.Management.Automation.RemoteException
+      [0m [90m 431 |[39m       expect(cre
+ateElementSpy)[33m.[39mtoHaveBeenCalledWit
+h([32m'a'[39m)[33m;[39m
+       [90m 432 |[39m       expect(appendC
+hildSpy)[33m.[39mtoHaveBeenCalled()[33m;
+[39m
+      [31m[1m>[22m[39m[90m 433 |[39m  
+     expect(removeChildSpy)[33m.[39mtoHave
+BeenCalled()[33m;[39m
+       [90m     |[39m                     
+         [31m[1m^[22m[39m
+
+

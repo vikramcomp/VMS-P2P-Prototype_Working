@@ -1,0 +1,7 @@
+﻿
+PASS src/app/service-details/mapping/__tests__/page-additional-coverage.t
+est.tsx
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+
+

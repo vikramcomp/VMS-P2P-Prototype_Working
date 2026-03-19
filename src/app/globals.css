@@ -1,0 +1,600 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   VMS GLOBAL CSS VARIABLES & DESIGN SYSTEM
+   ============================================ */
+
+:root {
+  /* === COLOR PALETTE === */
+  /* Primary Brand Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Neutral Colors */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* Status Colors */
+  --color-success: #22c55e;
+  --color-success-light: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-info: #0ea5e9;
+  --color-info-light: #e0f2fe;
+
+  /* VMS Specific Colors */
+  --color-vendor-primary: #0ea5e9;
+  --color-vendor-secondary: #0369a1;
+  --color-vendor-accent: #38bdf8;
+
+  /* === SEMANTIC COLORS === */
+  --background: #ffffff;
+  --body-bg: #f6f6f6;
+  --foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --card: #d1dfff47;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --primary: #1e40af;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --ring: #1e40af;
+  --card1: #ebf5ff;
+  --card2: #f4edff;
+  --card3: #e8fff9;
+  --card4: #fff7e6;
+  /* === TYPOGRAPHY === */
+  --font-family-primary: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-family-secondary: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  
+  /* VMS Specific Typography */
+  --font-size-display: 4rem;     /* 64px - Hero text */
+  --font-size-heading: 2rem;     /* 32px - h1 headings */
+  --font-size-subheading: 1.75rem; /* 28px - h2 headings */
+  --font-size-h3: 1.4rem;        /* 22.4px - h3 headings (30% less than h1) */
+  --font-size-body: 1rem;        /* 16px - Body text */
+  --font-size-caption: 0.875rem; /* 14px - Captions */
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+
+  /* === SPACING === */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px */
+  --spacing-2xl: 3rem;      /* 48px */
+  --spacing-3xl: 4rem;      /* 64px */
+
+  /* VMS Layout Spacing */
+  --spacing-page: 2rem;      /* Page margins */
+  --spacing-section: 3rem;   /* Section spacing */
+  --spacing-component: 1.5rem; /* Component spacing */
+  --spacing-element: 1rem;   /* Element spacing */
+
+  /* === BORDER RADIUS === */
+  --radius-sm: 0.25rem;     /* 4px */
+  --radius-md: 0.375rem;    /* 6px */
+  --radius-lg: 0.5rem;      /* 8px */
+  --radius-xl: 0.75rem;     /* 12px */
+  --radius-2xl: 1rem;       /* 16px */
+  --radius-full: 9999px;
+
+  /* VMS Component Radius */
+  --radius-card: 0.5rem;
+  --radius-button: 0.25rem;
+  --radius-input: 0.375rem;
+
+  /* === SHADOWS === */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* VMS Component Shadows */
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -1px rgb(0 0 0 / 0.03);
+  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -2px rgb(0 0 0 / 0.03);
+
+  /* === TRANSITIONS === */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+
+  /* === Z-INDEX === */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal: 1040;
+  --z-popover: 1050;
+  --z-tooltip: 1060;
+}
+
+/* === Button Variants === */
+.cus-primary-btn {
+    padding: 10px 16px;
+    background: #6B19FF;
+    box-shadow: none;
+    color: #ffffff;
+    border: none;
+    min-height: 32px;
+    font-weight: 400;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.cus-primary-btn:hover {
+    opacity: 0.8;
+}
+
+.cus-primary-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.cus-secondary-btn {
+    padding: 10px 24px;
+    background: transparent;
+    box-shadow: none;
+    color: #6B19FF;
+    border: solid 1px #6B19FF;
+    min-height: 40px;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --popover: #1e293b;
+    --popover-foreground: #ededed;
+    --card: #1e293b;
+    --card-foreground: #ededed;
+    --border: #334155;
+    --input: #334155;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: #334155;
+    --secondary-foreground: #ededed;
+    --accent: #334155;
+    --accent-foreground: #ededed;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --ring: #3b82f6;
+  }
+}
+
+/* === BASE STYLES === */
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-family-primary);
+  line-height: var(--line-height-normal);
+}
+
+/* === UTILITY CLASSES === */
+.vms-page {
+  padding: var(--spacing-page);
+}
+
+.vms-section {
+  margin-bottom: var(--spacing-section);
+}
+
+.vms-component {
+  padding: var(--spacing-component);
+}
+main.overflow-auto, main{background: var(--body-bg);}
+.container{background: var(--body-bg); height: 100%; overflow-y: auto;}
+.vms-card {
+  background: var(--background);
+  border-radius: 0;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+}
+
+#stat-active-vendors.vms-card{
+  background: var(--card3);
+}
+ 
+#stat-total-requests.vms-card{
+  background: var(--card2);
+}
+
+#stat-active-users.vms-card{
+  background: var(--card1);
+}
+#stat-pending-invoices.vms-card{
+  background: var(--card4);
+}
+
+.vms-button {
+  border-radius: var(--radius-button);
+  transition: var(--transition-fast);
+  /* font-weight: var(--font-weight-medium); */
+}
+.border-t.p-4 .vms-button {  padding-right:68px;}
+.vms-input {
+  border-radius: var(--radius-input);
+  border: 1px solid var(--input);
+  background: var(--background);
+  transition: var(--transition-fast);
+}
+
+.vms-text-display {
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.vms-text-heading {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.vms-text-subheading {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.vms-text-h3 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+h3.font-bold{line-height: 1; font-weight: var(--font-weight-bold);}
+h3.cus-line-height{line-height: 1;}
+
+.vms-text-body {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+}
+
+.vms-text-caption {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-normal);
+  color: var(--muted-foreground);
+}
+
+/* === ANIMATION CLASSES === */
+.vms-animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.vms-animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.vms-animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(10px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.95); 
+    opacity: 0; 
+  }
+  to { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+/* === RESPONSIVE UTILITIES === */
+@media (max-width: 640px) {
+  .vms-page {
+    padding: var(--spacing-md);
+  }
+  
+  .vms-text-display {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .vms-text-heading {
+    font-size: var(--font-size-xl);
+  }
+  
+  /* Responsive heading sizes */
+  h1 {
+    font-size: var(--font-size-xl); /* 1.25rem / 20px on mobile */
+  }
+  
+  h2 {
+    font-size: var(--font-size-lg); /* 1.125rem / 18px on mobile */
+  }
+  
+  h3 {
+    font-size: 0.875rem; /* 14px on mobile (30% less than h1's 20px = 14px) */
+  }
+}
+
+/* Remove the problematic @theme directive for now */
+
+/* === ROBOTO FONT UTILITY CLASSES === */
+.font-roboto {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-roboto-light {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+}
+
+.font-roboto-regular {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.font-roboto-medium {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.font-roboto-bold {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+}
+
+/* Ensure Roboto is applied to all headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Specific heading font sizes */
+h1 {
+  font-size: var(--font-size-heading); /* 2rem / 32px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+h2 {
+  font-size: var(--font-size-subheading); /* 1.75rem / 28px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+h3 {
+  font-size: var(--font-size-h3); /* 1.4rem / 22.4px - 30% less than h1 */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+/* Ensure Roboto is applied to all input elements */
+input, textarea, select, button {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Login page card styling */
+.cus-login-pg {
+  max-width: 350px; min-height:auto; margin: 0 auto; position: relative;
+}
+.cus-login-pg:before{position: absolute;
+    height: 12px;
+    width: calc(100% - 24px);
+    content: "";
+    bottom: -13px;
+    display: inline-block;
+    background-color: #ffffffab;
+    left: 12px;
+    z-index: 9;}
+.cus-login-pg:after{position: absolute;
+    height: 12px;
+    width: calc(100% - 48px);
+    content: "";
+    bottom: -27px;
+    display: inline-block;
+    background-color: #ffffffb8;
+    left: 24px;
+    z-index: 9;}
+.cus-copy-right-sec{position: fixed; bottom: 8px; left:50%; transform: translateX(-50%);}
+.separator .cus-or-cls{display: inline-block; width: 50px; text-align: center;font-weight: 600; box-sizing: border-box; background: var(--color-white); z-index: 9;}
+.separator:after{
+position: absolute; width: 100%; height:2px; content:""; background-color: var(--color-primary-50); left:0; bottom:7px;
+}
+.cus-sso-btn{background-color: #6a00ff; color: var(--background);}
+.bg-gradient-to-br{background: #e7eaef;}
+
+/* Login page background image */
+.login-bg {
+  background-image: url('/images/backgrounds/login-bg.png');
+  background-position: bottom center;
+  background-size: contain;
+}
+
+/* Card deck animation styles - Width/Height based */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.card-slide-center {
+  width: 100%;
+  height: auto;
+  opacity: 1;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+.card-slide-up {
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.card-slide-down {
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* === TABLE STYLES === */
+.vms-table-header {
+  background-color: #e8f4fd;
+}
+
+/* === WELCOME POPUP ANIMATIONS === */
+@keyframes arrowSlide {
+  0% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(-3px);
+  }
+}
+
+.animate-arrow-slide {
+  animation: arrowSlide 1.5s ease-in-out infinite;
+}
+
+
+.cus-class-main-layout{width: calc(100% - 280px);}
+.bg-black.bg-opacity-50{background-color: rgb(0 0 0 / 66%);}
+
+/** Custom CSS */
+.vms-text-subheading {
+    font-size: 1rem;
+    font-weight: 400;
+}
+.w-10 {
+    width: calc(var(--spacing) * 7);
+}
+.h-10 {
+    height: calc(var(--spacing) * 7);
+}
+.cus-border{
+  display: block;
+  width: 100%;
+  border-color: var(--border);
+  border-bottom-width: 1px;
+  padding-bottom: 16px;
+}
+.cus-primary-btn{background-color:#0152ef; color: #ffffff;}
+.cus-primary-btn.text-xs{font-size: 0.75rem;}
+
+/* Primary Submit Button */
+.cus-primary-submit-btn {
+  background-color: #0152ef !important;
+  color: #ffffff !important;
+  border: 1px solid #0152ef !important;
+  font-weight: 400!important;
+}
+.cus-primary-submit-btn:hover {
+  background-color: #013cbe !important;
+  color: #ffffff !important;
+  border-color: #013cbe !important;
+  opacity: 0.8;
+}
+.cus-primary-submit-btn:disabled {
+  background-color: #0152ef !important;
+  color: #ffffff !important;
+  border-color: #0152ef !important;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Secondary Reset/Cancel Button */
+.cus-secondary-reset-btn {
+  background-color: transparent !important;
+  color: #dc2626 !important;
+  border: 1px solid #dc2626 !important;
+  font-weight: 400;
+}
+.cus-secondary-reset-btn:hover {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+/* Expand collapse menu section */
+.cus-exp-coll-btn {
+    position: absolute;
+    right: -16px;
+    bottom: 0;
+}
+
+/** Responsive Custom CSS */
+@media (min-width: 96rem) {
+    .container {
+        max-width: 100%;
+    }
+}

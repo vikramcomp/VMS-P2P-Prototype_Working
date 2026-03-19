@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +73,7 @@ interface QuotationSpecTableData {
   specifications: SpecificationRow[];
 }
 
-export default function CreatePOPage() {
+function CreatePOPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -2539,5 +2539,13 @@ export default function CreatePOPage() {
         variant="danger"
       />
     </MainLayout>
+  );
+}
+
+export default function CreatePOPage() {
+  return (
+    <Suspense fallback={null}>
+      <CreatePOPageContent />
+    </Suspense>
   );
 }

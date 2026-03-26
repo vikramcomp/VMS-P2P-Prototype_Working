@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { FetchInterceptorProvider } from "@/components/providers/fetch-interceptor";
+import { CompanyProvider } from "@/context/CompanyContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,9 +41,11 @@ export default function RootLayout({
         data-testid="root-body"
       >
         <FetchInterceptorProvider>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <CompanyProvider>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </CompanyProvider>
           <Toaster />
         </FetchInterceptorProvider>
       </body>

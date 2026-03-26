@@ -58,6 +58,9 @@ global.fetch = jest.fn(() =>
   })
 ) as jest.Mock;
 
+global.URL.createObjectURL = jest.fn(() => 'mock-url');
+global.URL.revokeObjectURL = jest.fn();
+
 describe('VendorsContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -150,19 +153,20 @@ describe('VendorsContent Component', () => {
     render(<VendorsContent />);
     
     await waitFor(() => {
-      expect(screen.getByText('Hide Filters')).toBeInTheDocument();
+      expect(screen.getByText('Show Filters')).toBeInTheDocument();
     });
 
-    const toggleButton = screen.getByText('Hide Filters');
+    const toggleButton = screen.getByText('Show Filters');
     fireEvent.click(toggleButton);
     
     await waitFor(() => {
-      expect(screen.getByText('Show Filters')).toBeInTheDocument();
+      expect(screen.getByText('Hide Filters')).toBeInTheDocument();
     });
   });
 
   it('displays Select Criteria dropdown', async () => {
     render(<VendorsContent />);
+    fireEvent.click(screen.getByText('Show Filters'));
     await waitFor(() => {
       const labels = screen.getAllByText('Select Criteria');
       expect(labels.length).toBeGreaterThan(0);
@@ -171,6 +175,7 @@ describe('VendorsContent Component', () => {
 
   it('displays Select Value field', async () => {
     render(<VendorsContent />);
+    fireEvent.click(screen.getByText('Show Filters'));
     await waitFor(() => {
       const labels = screen.getAllByText('Select Value');
       expect(labels.length).toBeGreaterThan(0);
@@ -179,6 +184,7 @@ describe('VendorsContent Component', () => {
 
   it('displays Select Type dropdown', async () => {
     render(<VendorsContent />);
+    fireEvent.click(screen.getByText('Show Filters'));
     await waitFor(() => {
       const labels = screen.getAllByText('Select Type');
       expect(labels.length).toBeGreaterThan(0);
@@ -187,6 +193,7 @@ describe('VendorsContent Component', () => {
 
   it('displays Apply Filter button', async () => {
     render(<VendorsContent />);
+    fireEvent.click(screen.getByText('Show Filters'));
     await waitFor(() => {
       expect(screen.getByText('Apply Filter')).toBeInTheDocument();
     });
@@ -194,6 +201,7 @@ describe('VendorsContent Component', () => {
 
   it('displays Clear Filters button', async () => {
     render(<VendorsContent />);
+    fireEvent.click(screen.getByText('Show Filters'));
     await waitFor(() => {
       expect(screen.getByText('Clear Filters')).toBeInTheDocument();
     });

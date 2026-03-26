@@ -311,7 +311,7 @@ export default function MappingServiceDetailsPage({
       // Test with different error states
       setGroupsError("Groups error message");
       setServicesError("Services error message");
-      setServiceDetailsError("Service details error message");
+      setServiceDetailsError("Items error message");
 
       // Clear error states
       setGroupsError(null);
@@ -649,7 +649,7 @@ export default function MappingServiceDetailsPage({
     const message =
       result.message ||
       result.Message ||
-      "Service detail mappings updated successfully";
+      "Item mappings updated successfully";
 
     if (isSuccess === false) {
       throw new Error(message);
@@ -893,7 +893,7 @@ export default function MappingServiceDetailsPage({
 
   const catch__unreachable_block7 = (error: unknown) => {
     setServiceDetailsError(
-      error instanceof Error ? error.message : "Failed to load service details"
+      error instanceof Error ? error.message : "Failed to load items"
     );
 
     // Reset service details
@@ -966,7 +966,7 @@ export default function MappingServiceDetailsPage({
     const successMessage =
       apiResult.message ||
       apiResult.Message ||
-      "Service detail mappings updated successfully";
+      "Item mappings updated successfully";
 
     if (!hasSuccess || !hasSuccessAlt) {
       throw new Error(successMessage);
@@ -1358,8 +1358,8 @@ export default function MappingServiceDetailsPage({
 
   const catchLoadServiceDetails = (error: unknown) => {
     const errorMessage =
-      error instanceof Error ? error.message : "Failed to load service details";
-    console.error("Load service details error:", error);
+      error instanceof Error ? error.message : "Failed to load items";
+    console.error("Load items error:", error);
     setServiceDetailsError(errorMessage);
 
     // Reset service details
@@ -1603,7 +1603,7 @@ export default function MappingServiceDetailsPage({
     const successMessage =
       resultData.message ||
       resultData.Message ||
-      "Service detail mappings updated successfully";
+      "Item mappings updated successfully";
     const isOperationSuccessful =
       resultData.isSuccess !== false &&
       resultData.IsSuccess !== false &&
@@ -1781,7 +1781,7 @@ export default function MappingServiceDetailsPage({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-              Mapping Service Details
+              Mapping Items
             </h3>
           </div>
         </div>
@@ -1888,13 +1888,13 @@ export default function MappingServiceDetailsPage({
 
             {/* Mapping Interface */}
             <div className="grid grid-cols-12 gap-4 mt-4">
-              {/* Available Service Details */}
+              {/* Available Items */}
               <div className="col-span-5">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-4 pb-2">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900 whitespace-nowrap">
-                        Available Service Details
+                        Available Items
                       </p>
                       {hasChanges() && (
                         <span className="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md font-normal">
@@ -1915,7 +1915,7 @@ export default function MappingServiceDetailsPage({
                     </div>
                   </div>
 
-                  {/* Service Details List */}
+                  {/* Items List */}
                   <div className="border rounded-md h-96 overflow-y-auto bg-white">
                     {(() => {
                       if (serviceDetailsLoading) {
@@ -1942,7 +1942,7 @@ export default function MappingServiceDetailsPage({
                           return (
                             <div className="flex flex-col items-center justify-center h-full text-gray-500 px-4">
                               <p className="text-xs">
-                                No service details available
+                                No items available
                               </p>
                             </div>
                           );
@@ -1953,7 +1953,7 @@ export default function MappingServiceDetailsPage({
                             <AlertCircle className="h-8 w-8 mb-2 text-gray-400" />
                             <p className="text-xs text-center">
                               Please select a group and service to view
-                              available service details
+                              available items
                             </p>
                           </div>
                         );
@@ -2064,12 +2064,12 @@ export default function MappingServiceDetailsPage({
                 </Tooltip>
               </div>
 
-              {/* Mapped Service Details */}
+              {/* Mapped Items */}
               <div className="col-span-5">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-4 pb-2">
                     <p className="font-semibold text-gray-900 whitespace-nowrap">
-                      Mapped Service Details
+                      Mapped Items
                     </p>
                     {/* Search Box */}
                     <div className="relative flex-1">
@@ -2084,7 +2084,7 @@ export default function MappingServiceDetailsPage({
                     </div>
                   </div>
 
-                  {/* Service Details List */}
+                  {/* Items List */}
                   <div className="border rounded-md h-96 overflow-y-auto bg-white">
                     {(() => {
                       if (serviceDetailsLoading) {
@@ -2109,7 +2109,7 @@ export default function MappingServiceDetailsPage({
                             <AlertCircle className="h-8 w-8 mb-2 text-gray-400" />
                             <p className="text-xs text-center">
                               Please select a group and service to view mapped
-                              service details
+                              items
                             </p>
                           </div>
                         );

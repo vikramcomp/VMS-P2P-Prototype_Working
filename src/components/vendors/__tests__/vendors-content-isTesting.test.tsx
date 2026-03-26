@@ -51,6 +51,9 @@ global.fetch = jest.fn(() =>
   })
 ) as jest.Mock;
 
+global.URL.createObjectURL = jest.fn(() => 'mock-url');
+global.URL.revokeObjectURL = jest.fn();
+
 describe('VendorsContent isTesting prop', () => {
   it('renders with isTesting and root test id', () => {
     render(<VendorsContent isTesting={true} />);

@@ -15,6 +15,11 @@ import { useStudios } from "@/hooks/use-studios";
 import { groupsService } from "@/services/groups-service";
 import { useToast } from "@/hooks/use-toast";
 import { UpdateGroupRequest } from "@/types/groups";
+import { useCompanyContext } from "@/context/CompanyContext";
+import {
+  getBusinessUnitByIdForCompany,
+  updateLocalBusinessUnit,
+} from "@/data/seedData/businessUnits";
 
 export default function EditGroupPage({
   isTesting = false,
@@ -22,9 +27,12 @@ export default function EditGroupPage({
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { activeCompany } = useCompanyContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [groupId, setGroupId] = useState<number | null>(null);
+  const [recordId, setRecordId] = useState<string>("");
+  const [isLocalRecord, setIsLocalRecord] = useState(false);
   const [formData, setFormData] = useState({
     studioId: "", // Store StudioId instead of studioName
     studioName: "", // Keep for display/validation purposes
@@ -123,20 +131,80 @@ export default function EditGroupPage({
     };
   };
 
+  const normalizeText = (value: string) => value.trim().toLowerCase();
+
+  const findStudioByName = (studioName: string) => {
+    if (!studioName) return null;
+
+    return (
+      studios.find((studio: any) => {
+        const candidateName = studio.name || studio.StudioName || "";
+        return normalizeText(candidateName) === normalizeText(studioName);
+      }) || null
+    );
+  };
+
+  const transformLocalBusinessUnit = (unit: any) => {
+    const matchedStudio = findStudioByName(unit.location || "");
+
+    return {
+      studioId: matchedStudio ? String(matchedStudio.id || matchedStudio.StudioId || "") : "",
+      studioName: unit.location || "",
+      name: unit.name || "",
+      description: unit.description || "",
+      status: unit.isActive ? 1 : 0,
+    };
+  };
+
   useEffect(() => {
     const fetchGroupData = async () => {
       if (!params.id) {
         toast({
           title: "Error",
-          description: "Group ID is required",
+          description: "Branch ID is required",
           variant: "destructive",
         });
         router.push("/groups");
         return;
       }
 
-      const id = Number.parseInt(params.id as string);
+      const idParam = String(params.id);
+      setRecordId(idParam);
+
+      const isNumericId = /^\d+$/.test(idParam);
+
+      if (!isNumericId) {
+        const companyId = activeCompany?.id;
+        if (!companyId) {
+          // Wait for company context initialization before resolving local data.
+          return;
+        }
+
+        setIsLoading(true);
+        const localRecord = getBusinessUnitByIdForCompany(companyId, idParam);
+
+        if (!localRecord) {
+          toast({
+            title: "Error",
+            description: "Branch not found",
+            variant: "destructive",
+          });
+          router.push("/groups");
+          return;
+        }
+
+        const localFormData = transformLocalBusinessUnit(localRecord);
+        setIsLocalRecord(true);
+        setGroupId(null);
+        setFormData(localFormData);
+        setOriginalData(localFormData);
+        setIsLoading(false);
+        return;
+      }
+
+      const id = Number.parseInt(idParam, 10);
       setGroupId(id);
+      setIsLocalRecord(false);
 
       try {
         setIsLoading(true);
@@ -153,7 +221,7 @@ export default function EditGroupPage({
           } else {
             toast({
               title: "Error",
-              description: "Group not found",
+              description: "Branch not found",
               variant: "destructive",
             });
             setTimeout(() => {
@@ -183,7 +251,7 @@ export default function EditGroupPage({
       }
     };
     fetchGroupData();
-  }, [params.id, router, toast]);
+  }, [params.id, router, toast, activeCompany?.id]);
   // Helper to check for unsaved changes
   const hasUnsavedChanges = () => {
     return (
@@ -197,7 +265,21 @@ export default function EditGroupPage({
 
   // Update studioName in formData if studios are loaded and studioId is set
   useEffect(() => {
-    if (formData.studioId && studios.length > 0) {
+    if (studios.length === 0) return;
+
+    if (!formData.studioId && formData.studioName) {
+      const matchedStudio = findStudioByName(formData.studioName);
+      if (matchedStudio) {
+        setFormData((prev) => ({
+          ...prev,
+          studioId: String(matchedStudio.id || matchedStudio.StudioId || ""),
+          studioName: matchedStudio.name || matchedStudio.StudioName || prev.studioName,
+        }));
+      }
+      return;
+    }
+
+    if (formData.studioId) {
       const foundStudio = studios.find(
         (studio: any) => studio.id?.toString() === formData.studioId
       );
@@ -211,7 +293,7 @@ export default function EditGroupPage({
         }));
       }
     }
-  }, [studios, formData.studioId]);
+  }, [studios, formData.studioId, formData.studioName]);
 
   // Function to collapse consecutive spaces while typing
   const collapseSpaces = (value: string) => {
@@ -258,7 +340,7 @@ export default function EditGroupPage({
       return;
     }
 
-    if (!groupId) {
+    if (!groupId && !isLocalRecord) {
       toast({
         title: "Error",
         description: "Group ID is missing",
@@ -281,8 +363,36 @@ export default function EditGroupPage({
         : "";
 
       // Prepare the API request according to the specified structure
+      if (isLocalRecord) {
+        const companyId = activeCompany?.id;
+        const existingLocalRecord = companyId
+          ? getBusinessUnitByIdForCompany(companyId, recordId)
+          : null;
+
+        updateLocalBusinessUnit({
+          id: recordId,
+          companyId: existingLocalRecord?.companyId || companyId,
+          code: existingLocalRecord?.code || `BR-${trimSpaces(formData.name).slice(0, 6).toUpperCase().replaceAll(" ", "-")}`,
+          name: trimSpaces(formData.name),
+          location: studioName || formData.studioName,
+          description: trimSpaces(formData.description),
+          isActive: formData.status === 1,
+        });
+
+        toast({
+          title: "Success",
+          description: "Branch updated successfully!",
+          variant: "success",
+        });
+
+        setTimeout(() => {
+          router.push("/groups");
+        }, 600);
+        return;
+      }
+
       const updateGroupRequest: UpdateGroupRequest = {
-        StudioId: Number.parseInt(formData.studioId),
+        StudioId: Number.parseInt(formData.studioId, 10),
         CategoryId: groupId,
         CategoryName: trimSpaces(formData.name), // Ensure name is sanitized
         CategoryDescription: trimSpaces(formData.description),
@@ -290,15 +400,12 @@ export default function EditGroupPage({
         StudioName: studioName,
       };
 
-      const response = await groupsService.updateGroup(
-        groupId,
-        updateGroupRequest
-      );
+      const response = await groupsService.updateGroup(groupId, updateGroupRequest);
 
       if (response.success) {
         toast({
           title: "Success",
-          description: "Group updated successfully!",
+          description: "Branch updated successfully!",
           variant: "success",
         });
         // Wait briefly so toast is visible before navigating
@@ -325,6 +432,15 @@ export default function EditGroupPage({
   };
 
   const handleReset = async () => {
+    if (isLocalRecord && activeCompany?.id && recordId) {
+      const localRecord = getBusinessUnitByIdForCompany(activeCompany.id, recordId);
+      if (localRecord) {
+        const resetLocalData = transformLocalBusinessUnit(localRecord);
+        setFormData(resetLocalData);
+      }
+      return;
+    }
+
     if (!groupId) return;
 
     try {
@@ -367,7 +483,7 @@ export default function EditGroupPage({
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="flex items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin" />
-              <span>Loading group details for ID: {params.id}...</span>
+              <span>Loading branch details for ID: {params.id}...</span>
             </div>
           </div>
         </MainLayout>
@@ -381,7 +497,7 @@ export default function EditGroupPage({
         <div className="space-y-6" data-testid="edit-group-root">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <Tooltip content="Go back to Groups" position="bottom">
+            <Tooltip content="Go back to Branches" position="bottom">
               <Button
                 variant="outline"
                 size="icon"
@@ -393,10 +509,10 @@ export default function EditGroupPage({
             </Tooltip>
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                Edit Group
+                Edit Branch
               </h3>
               <p className="text-xs text-muted-foreground">
-                Update group information and permissions
+                Update branch information
               </p>
             </div>
           </div>
@@ -420,7 +536,7 @@ export default function EditGroupPage({
                 <div className="grid gap-6 md:grid-cols-3">
                   <div>
                     <label htmlFor="group-name-input" className="block text-sm font-medium mb-2 text-gray-700">
-                      Group Name <span className="text-red-500">*</span>
+                      Branch Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="group-name-input"
@@ -430,7 +546,7 @@ export default function EditGroupPage({
                         handleInputChange("name", e.target.value)
                       }
                       onBlur={() => handleBlur("name")}
-                      placeholder="Enter group name"
+                      placeholder="Enter branch name"
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 ${
                         formData.name.trim() !== "" &&
                         formData.name.trim().length < 3
@@ -445,19 +561,19 @@ export default function EditGroupPage({
                         <div className="mt-1 text-red-600 text-sm flex items-center gap-2">
                           <AlertCircle className="h-4 w-4 flex-shrink-0" />
                           <span>
-                            Group name must be at least 3 characters long
+                            Branch name must be at least 3 characters long
                           </span>
                         </div>
                       )}
                     {formData.name.trim().length >= 3 && (
                       <div className="mt-1 text-green-600 text-xs">
-                        ✓ Valid group name
+                        ✓ Valid branch name
                       </div>
                     )}
                   </div>
                   <div>
                     <label htmlFor="studio-select" className="block text-sm font-medium mb-2 text-gray-700">
-                      Studio Name <span className="text-red-500">*</span>
+                      Location <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <select
@@ -497,8 +613,8 @@ export default function EditGroupPage({
                       >
                         <option value="" disabled className="text-gray-500">
                           {studiosLoading
-                            ? "Loading studios..."
-                            : "Select Studio Name"}
+                            ? "Loading locations..."
+                            : "Select Location"}
                         </option>
                         {studios && studios.length > 0
                           ? studios.map((studio: any) => {
@@ -557,7 +673,7 @@ export default function EditGroupPage({
                       studios &&
                       studios.length > 0 && (
                         <div className="mt-1 text-gray-500 text-xs">
-                          Choose the studio this group belongs to
+                          Choose the location for this branch
                         </div>
                       )}
                   </div>
@@ -600,7 +716,7 @@ export default function EditGroupPage({
                       handleInputChange("description", e.target.value)
                     }
                     onBlur={() => handleBlur("description")}
-                    placeholder="Enter group description"
+                    placeholder="Enter branch description"
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0152ef] focus:border-blue-500 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 resize-vertical"
                     disabled={isSubmitting}

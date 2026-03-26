@@ -115,7 +115,7 @@ export default function EditServiceDetailPage({
         console.error("Error fetching service detail:", error);
         toast({
           title: "Error",
-          description: "Failed to fetch service detail data",
+          description: "Failed to fetch item data",
           variant: "destructive",
         });
         router.push("/service-details");
@@ -187,7 +187,7 @@ export default function EditServiceDetailPage({
       if (response.success) {
         toast({
           title: "Success",
-          description: "Service detail updated successfully!",
+          description: "Item updated successfully!",
           variant: "success",
         });
 
@@ -196,7 +196,7 @@ export default function EditServiceDetailPage({
       } else {
         toast({
           title: "Error",
-          description: response.message || "Failed to update service detail",
+          description: response.message || "Failed to update item",
           variant: "destructive",
         });
       }
@@ -237,7 +237,7 @@ export default function EditServiceDetailPage({
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin" />
-              <span>Loading service detail...</span>
+              <span>Loading item...</span>
             </div>
           </div>
         </MainLayout>
@@ -252,7 +252,7 @@ export default function EditServiceDetailPage({
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-6 w-6" />
-              <span>Service detail not found</span>
+              <span>Item not found</span>
             </div>
           </div>
         </MainLayout>
@@ -266,7 +266,7 @@ export default function EditServiceDetailPage({
         <div className="space-y-6" data-testid="edit-service-detail-page">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <Tooltip content="Go back to Service Details" position="bottom">
+            <Tooltip content="Go back to Items" position="bottom">
               <Button
                 variant="outline"
                 size="icon"
@@ -278,10 +278,10 @@ export default function EditServiceDetailPage({
             </Tooltip>
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                Edit Service Detail
+                Edit Item
               </h3>
               <p className="text-muted-foreground text-xs">
-                Modify the service detail information
+                Modify the item information
               </p>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function EditServiceDetailPage({
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">
-                      Service Detail Name{" "}
+                      Item Name{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -320,7 +320,7 @@ export default function EditServiceDetailPage({
                       onChange={(e) =>
                         handleInputChange("serviceDetailName", e.target.value)
                       }
-                      placeholder="Enter service detail name"
+                      placeholder="Enter item name"
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 ${
                         formData.serviceDetailName?.trim() === "" ||
                         !formData.serviceDetailName
@@ -332,13 +332,13 @@ export default function EditServiceDetailPage({
                     {formData.serviceDetailName?.trim() !== "" &&
                       formData.serviceDetailName && (
                         <div className="mt-1 text-green-600 text-xs">
-                          ✓ Valid service detail name
+                          ✓ Valid item name
                         </div>
                       )}
                     {(!formData.serviceDetailName ||
                       formData.serviceDetailName?.trim() === "") && (
                       <div className="mt-1 text-red-600 text-xs">
-                        Service detail name is required
+                        Item name is required
                       </div>
                     )}
                   </div>
@@ -357,7 +357,7 @@ export default function EditServiceDetailPage({
                         e.target.value
                       )
                     }
-                    placeholder="Enter service detail description"
+                    placeholder="Enter item description"
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0152ef] focus:border-blue-500 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 resize-vertical"
                   />

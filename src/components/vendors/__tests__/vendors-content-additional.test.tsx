@@ -73,6 +73,11 @@ describe('VendorsContent - Additional Coverage Tests', () => {
       });
 
       render(<VendorsContent />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Show Filters')).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByText('Show Filters'));
       
       await waitFor(() => {
         expect(screen.getByText('Apply Filter')).toBeInTheDocument();

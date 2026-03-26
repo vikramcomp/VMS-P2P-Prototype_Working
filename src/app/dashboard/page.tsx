@@ -49,6 +49,12 @@ const formatTimeAgo = (dateString: string): string => {
   }
 };
 
+const isNetworkFetchError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return message.includes('failed to fetch') || message.includes('networkerror');
+};
+
 interface RecentActivityItem {
   id: string;
   description: string;
@@ -75,6 +81,7 @@ interface DashboardContentProps {
 
 export function DashboardContent({ isTesting = false }: DashboardContentProps = {}) {
   const router = useRouter();
+  const hasLoggedNetworkIssueRef = React.useRef(false);
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics>({
     activeUsers: 0,
     activeVendors: 0,
@@ -90,6 +97,18 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
   const [invoiceSummaryLoading, setInvoiceSummaryLoading] = useState(true);
   const [recentActivities, setRecentActivities] = useState<RecentActivityItem[]>([]);
   const [recentActivitiesLoading, setRecentActivitiesLoading] = useState(true);
+
+  const logDashboardFetchError = (context: string, error: unknown) => {
+    if (isNetworkFetchError(error)) {
+      if (!hasLoggedNetworkIssueRef.current) {
+        console.warn(`${context}: API is unreachable. Showing fallback dashboard data.`);
+        hasLoggedNetworkIssueRef.current = true;
+      }
+      return;
+    }
+
+    console.error(context, error);
+  };
 
   React.useEffect(() => {
     if (isTesting) {
@@ -173,7 +192,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
       try {
         const token = authService.getToken();
         const headers: HeadersInit = {
-          'Content-Type': 'application/json',
+          Accept: 'application/json',
         };
 
         if (token) {
@@ -189,7 +208,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
         const data = await response.json();
         setDashboardMetrics(normalizeMetrics(data));
       } catch (error) {
-        console.error('Failed to fetch dashboard metrics:', error);
+        logDashboardFetchError('Failed to fetch dashboard metrics', error);
         setDashboardMetrics({
           activeUsers: 0,
           activeVendors: 0,
@@ -279,7 +298,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
       try {
         const token = authService.getToken();
         const headers: HeadersInit = {
-          'Content-Type': 'application/json',
+          Accept: 'application/json',
         };
 
         if (token) {
@@ -295,7 +314,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
         const data = await response.json();
         setInvoiceSummary(normalizeSummary(data));
       } catch (error) {
-        console.error('Failed to fetch invoice summary:', error);
+        logDashboardFetchError('Failed to fetch invoice summary', error);
         setInvoiceSummary({ total: 0, approved: 0, pending: 0 });
       } finally {
         setInvoiceSummaryLoading(false);
@@ -316,7 +335,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
       try {
         const token = authService.getToken();
         const headers: HeadersInit = {
-          'Content-Type': 'application/json',
+          Accept: 'application/json',
         };
 
         if (token) {
@@ -347,7 +366,7 @@ export function DashboardContent({ isTesting = false }: DashboardContentProps = 
 
         setRecentActivities(formattedActivities);
       } catch (error) {
-        console.error('Failed to fetch recent activities:', error);
+        logDashboardFetchError('Failed to fetch recent activities', error);
         setRecentActivities([]);
       } finally {
         setRecentActivitiesLoading(false);

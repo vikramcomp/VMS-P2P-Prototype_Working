@@ -107,9 +107,14 @@ export function FetchInterceptorProvider({ children }: { children: React.ReactNo
         // Merge headers
         const headers = new Headers(init?.headers);
 
-        // Set default content type if not provided (but not for FormData)
+        const method = (init?.method || (typeof input !== 'string' && !(input instanceof URL) ? input.method : 'GET')).toUpperCase();
+        const hasBody = init?.body !== undefined && init?.body !== null;
+        const isMethodWithBody = method !== 'GET' && method !== 'HEAD';
+
+        // Only set Content-Type when a request can contain a body.
+        // Adding it to GET requests can trigger unnecessary preflight checks.
         const isFormData = init?.body instanceof FormData;
-        if (!headers.has('Content-Type') && !isFormData) {
+        if (!headers.has('Content-Type') && hasBody && isMethodWithBody && !isFormData) {
           headers.set('Content-Type', 'application/json');
         }
 

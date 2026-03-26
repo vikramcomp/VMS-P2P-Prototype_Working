@@ -293,7 +293,7 @@ export default function MappingServicesPage({
     if (!selectedGroup) {
       toast({
         title: "Error",
-        description: "Please select a group first",
+        description: "Please select a category first",
         variant: "destructive",
       });
       return;
@@ -325,7 +325,7 @@ export default function MappingServicesPage({
         toast({
           title: "Success",
           description:
-            response.message || "Service mappings updated successfully",
+            response.message || "Sub-category mappings updated successfully",
           variant: "success",
         });
 
@@ -399,7 +399,7 @@ export default function MappingServicesPage({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-              Mapping Services
+              Mapping Sub-Categories
             </h3>
           </div>
         </div>
@@ -408,14 +408,14 @@ export default function MappingServicesPage({
         {groupsError && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            <span>Error loading groups: {groupsError}</span>
+            <span>Error loading categories: {groupsError}</span>
           </div>
         )}
 
         {servicesError && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            <span>Error loading services: {servicesError}</span>
+            <span>Error loading sub-categories: {servicesError}</span>
           </div>
         )}
 
@@ -443,12 +443,12 @@ export default function MappingServicesPage({
                   htmlFor="selectGroup"
                   className="block text-sm font-medium mb-2"
                 >
-                  Select Group <span className="text-red-500">*</span>
+                  Select Category <span className="text-red-500">*</span>
                 </label>
                 {groupsLoading ? (
                   <div className="flex items-center gap-2 text-gray-400">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Loading groups...</span>
+                    <span>Loading categories...</span>
                   </div>
                 ) : (
                   <select
@@ -457,7 +457,7 @@ export default function MappingServicesPage({
                     onChange={(e) => handleGroupChange(e.target.value)}
                     className="w-full text-sm mt-1 p-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#0152ef] focus:border-vendor-500"
                   >
-                    <option value="">Select a group</option>
+                    <option value="">Select a category</option>
                     {groups.map((group) => {
                       const groupValue = group.Value || group.value || "";
                       const groupText = group.Text || group.text || "";
@@ -472,12 +472,12 @@ export default function MappingServicesPage({
               </div>
             </div>
 
-            {/* Services Mapping Interface */}
+            {/* Sub-Category Mapping Interface */}
             <div className="grid grid-cols-12 gap-4 mt-4">
-              {/* Available Services */}
+              {/* Available Sub-Categories */}
               <div className="col-span-5">
                 <div className="flex justify-between items-center mb-2">
-                  <p className="font-semibold">Available Services</p>
+                  <p className="font-semibold">Available Sub-Categories</p>
                   <div className="relative">
                     <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Input
@@ -492,14 +492,14 @@ export default function MappingServicesPage({
                   <div className="border border-gray-200 rounded-md h-64 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Loading services...</span>
+                      <span>Loading sub-categories...</span>
                     </div>
                   </div>
                 ) : (
                   <div className="border border-gray-200 rounded-md h-64 overflow-y-auto">
                     {filteredAvailableServices.length === 0 ? (
                       <div className="p-4 text-center text-gray-500 text-xs">
-                        No services available
+                        No sub-categories available
                       </div>
                     ) : (
                       filteredAvailableServices.map((service) => (
@@ -521,7 +521,7 @@ export default function MappingServicesPage({
                   </div>
                 )}
                 <div className="mt-1 text-xs text-gray-500">
-                  {filteredAvailableServices.length} services available
+                  {filteredAvailableServices.length} sub-categories available
                 </div>
               </div>
 
@@ -577,10 +577,10 @@ export default function MappingServicesPage({
                 </Tooltip>
               </div>
 
-              {/* Mapped Services */}
+              {/* Mapped Sub-Categories */}
               <div className="col-span-5">
                 <div className="flex justify-between items-center mb-2">
-                  <p className="font-semibold">Mapped Services</p>
+                  <p className="font-semibold">Mapped Sub-Categories</p>
                   <div className="relative">
                     <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Input
@@ -595,14 +595,14 @@ export default function MappingServicesPage({
                   <div className="border border-gray-200 rounded-md h-64 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Loading services...</span>
+                      <span>Loading sub-categories...</span>
                     </div>
                   </div>
                 ) : (
                   <div className="border border-gray-200 rounded-md h-64 overflow-y-auto">
                     {filteredMappedServices.length === 0 ? (
                       <div className="p-4 text-center text-gray-500 text-xs">
-                        No services mapped
+                        No sub-categories mapped
                       </div>
                     ) : (
                       filteredMappedServices.map((service) => (
@@ -624,7 +624,7 @@ export default function MappingServicesPage({
                   </div>
                 )}
                 <div className="mt-1 text-xs text-gray-500">
-                  {filteredMappedServices.length} services mapped
+                  {filteredMappedServices.length} sub-categories mapped
                 </div>
               </div>
             </div>

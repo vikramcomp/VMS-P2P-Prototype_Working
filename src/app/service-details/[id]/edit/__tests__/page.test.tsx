@@ -82,7 +82,7 @@ describe('EditServiceDetailPage', () => {
     it('should display loading state initially', () => {
       render(<EditServiceDetailPage />);
       
-      expect(screen.getByText(/Loading service detail.../i)).toBeInTheDocument();
+      expect(screen.getByText(/Loading item.../i)).toBeInTheDocument();
     });
 
     it('should load and display service detail data', async () => {
@@ -98,8 +98,8 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/Enter service detail name/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Enter service detail description/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter item name/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter item description/i)).toBeInTheDocument();
       });
     });
 
@@ -127,7 +127,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: 'Updated Service Detail' } });
       });
 
@@ -137,24 +137,24 @@ describe('EditServiceDetailPage', () => {
       });
     });
 
-    it('should show validation error for empty service detail name', async () => {
+    it('should show validation error for empty item name', async () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: '' } });
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Service detail name is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/Item name is required/i)).toBeInTheDocument();
       });
     });
 
-    it('should show success indicator for valid service detail name', async () => {
+    it('should show success indicator for valid item name', async () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        expect(screen.getByText(/✓ Valid service detail name/i)).toBeInTheDocument();
+        expect(screen.getByText(/✓ Valid item name/i)).toBeInTheDocument();
       });
     });
   });
@@ -164,7 +164,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: 'Modified Service Detail' } });
       });
 
@@ -185,7 +185,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: 'Modified Service Detail' } });
       });
 
@@ -201,7 +201,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/Enter service detail name/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter item name/i)).toBeInTheDocument();
       });
 
       const submitButton = screen.getByRole('button', { name: /Update/i });
@@ -216,7 +216,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: 'Modified Service Detail' } });
       });
 
@@ -232,7 +232,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
         fireEvent.change(nameInput, { target: { value: 'Modified Service Detail' } });
       });
 
@@ -298,7 +298,7 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        expect(screen.getByText(/Service detail not found/i)).toBeInTheDocument();
+        expect(screen.getByText(/Item not found/i)).toBeInTheDocument();
       });
     });
 
@@ -322,8 +322,8 @@ describe('EditServiceDetailPage', () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        const nameInput = screen.getByPlaceholderText(/Enter service detail name/i);
-        const descInput = screen.getByPlaceholderText(/Enter service detail description/i);
+        const nameInput = screen.getByPlaceholderText(/Enter item name/i);
+        const descInput = screen.getByPlaceholderText(/Enter item description/i);
 
         fireEvent.change(nameInput, { target: { value: 'New Name' } });
         fireEvent.change(descInput, { target: { value: 'New Description' } });
@@ -340,14 +340,14 @@ describe('EditServiceDetailPage', () => {
     it('should show loading spinner during data fetch', () => {
       render(<EditServiceDetailPage />);
       
-      expect(screen.getByText(/Loading service detail.../i)).toBeInTheDocument();
+      expect(screen.getByText(/Loading item.../i)).toBeInTheDocument();
     });
 
     it('should hide loading spinner after data is loaded', async () => {
       render(<EditServiceDetailPage />);
       
       await waitFor(() => {
-        expect(screen.queryByText(/Loading service detail.../i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Loading item.../i)).not.toBeInTheDocument();
       });
     });
   });

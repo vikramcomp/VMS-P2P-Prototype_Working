@@ -65,7 +65,7 @@ describe('MappingServicesPage - Additional Coverage Tests', () => {
       render(<MappingServicesPage isTesting={true} />);
       
       await waitFor(() => {
-        expect(screen.getByText('Mapping Services')).toBeInTheDocument();
+        expect(screen.getByText('Mapping Sub-Categories')).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -166,7 +166,7 @@ describe('MappingServicesPage - Additional Coverage Tests', () => {
       fireEvent.click(moveAllRightButton!);
 
       await waitFor(() => {
-        expect(screen.getByText('No services available')).toBeInTheDocument();
+        expect(screen.getByText('No sub-categories available')).toBeInTheDocument();
       });
     });
 
@@ -203,7 +203,7 @@ describe('MappingServicesPage - Additional Coverage Tests', () => {
       fireEvent.click(moveAllLeftButton!);
 
       await waitFor(() => {
-        expect(screen.getByText('No services mapped')).toBeInTheDocument();
+        expect(screen.getByText('No sub-categories mapped')).toBeInTheDocument();
       });
     });
 

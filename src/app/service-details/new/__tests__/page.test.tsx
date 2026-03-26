@@ -49,9 +49,9 @@ describe('NewServiceDetailPage', () => {
       render(<NewServiceDetailPage />);
       
       expect(screen.getByTestId('new-service-detail-page')).toBeInTheDocument();
-      expect(screen.getByText('Add New Service Detail')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter service detail name')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter service detail description')).toBeInTheDocument();
+      expect(screen.getByText('Add New Item')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter item name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter item description')).toBeInTheDocument();
     });
 
     it('should render all action buttons', () => {
@@ -64,8 +64,8 @@ describe('NewServiceDetailPage', () => {
     it('should display header with correct title and description', () => {
       render(<NewServiceDetailPage />);
       
-      expect(screen.getByText('Add New Service Detail')).toBeInTheDocument();
-      expect(screen.getByText('Create a new service detail entry')).toBeInTheDocument();
+      expect(screen.getByText('Add New Item')).toBeInTheDocument();
+      expect(screen.getByText('Create a new item entry')).toBeInTheDocument();
     });
 
     it('should render required field indicator', () => {
@@ -88,7 +88,7 @@ describe('NewServiceDetailPage', () => {
     it('should enable submit button when service detail name is filled', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
@@ -98,16 +98,16 @@ describe('NewServiceDetailPage', () => {
     it('should show validation message for valid service detail name', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: 'Test Service Detail' } });
       
-      expect(screen.getByText('✓ Valid service detail name')).toBeInTheDocument();
+      expect(screen.getByText('✓ Valid item name')).toBeInTheDocument();
     });
 
     it('should not show validation message when name is empty', () => {
       render(<NewServiceDetailPage />);
       
-      expect(screen.queryByText('✓ Valid service detail name')).not.toBeInTheDocument();
+      expect(screen.queryByText('✓ Valid item name')).not.toBeInTheDocument();
     });
   });
 
@@ -116,7 +116,7 @@ describe('NewServiceDetailPage', () => {
     it('should handle service detail name input changes', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: 'New Service Detail' } });
       
       expect(nameInput).toHaveValue('New Service Detail');
@@ -125,7 +125,7 @@ describe('NewServiceDetailPage', () => {
     it('should handle description input changes', () => {
       render(<NewServiceDetailPage />);
       
-      const descriptionInput = screen.getByPlaceholderText('Enter service detail description');
+      const descriptionInput = screen.getByPlaceholderText('Enter item description');
       fireEvent.change(descriptionInput, { target: { value: 'Test description' } });
       
       expect(descriptionInput).toHaveValue('Test description');
@@ -134,8 +134,8 @@ describe('NewServiceDetailPage', () => {
     it('should update form data correctly when inputs change', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
-      const descriptionInput = screen.getByPlaceholderText('Enter service detail description');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
+      const descriptionInput = screen.getByPlaceholderText('Enter item description');
       
       fireEvent.change(nameInput, { target: { value: 'Service Name' } });
       fireEvent.change(descriptionInput, { target: { value: 'Service Description' } });
@@ -155,8 +155,8 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail description'), { target: { value: 'Test description' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item description'), { target: { value: 'Test description' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -178,7 +178,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -186,7 +186,7 @@ describe('NewServiceDetailPage', () => {
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
           title: 'Success',
-          description: 'Service detail created successfully!',
+          description: 'Item created successfully!',
           variant: 'success',
         });
       });
@@ -202,7 +202,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -210,7 +210,7 @@ describe('NewServiceDetailPage', () => {
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
           title: 'Error',
-          description: 'Failed to create service detail',
+          description: 'Failed to create item',
           variant: 'destructive',
         });
       });
@@ -236,7 +236,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -257,7 +257,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -274,7 +274,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -292,7 +292,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);
@@ -312,20 +312,20 @@ describe('NewServiceDetailPage', () => {
     it('should reset form fields when reset button is clicked', () => {
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail description'), { target: { value: 'Test description' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item description'), { target: { value: 'Test description' } });
       
       const resetButton = screen.getByText('Reset').closest('button');
       fireEvent.click(resetButton!);
       
-      expect(screen.getByPlaceholderText('Enter service detail name')).toHaveValue('');
-      expect(screen.getByPlaceholderText('Enter service detail description')).toHaveValue('');
+      expect(screen.getByPlaceholderText('Enter item name')).toHaveValue('');
+      expect(screen.getByPlaceholderText('Enter item description')).toHaveValue('');
     });
 
     it('should disable submit button after reset if form becomes invalid', () => {
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test Service Detail' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test Service Detail' } });
       
       const resetButton = screen.getByText('Reset').closest('button');
       fireEvent.click(resetButton!);
@@ -347,7 +347,7 @@ describe('NewServiceDetailPage', () => {
     it('should handle service detail name with only whitespace', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: '   ' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
@@ -357,7 +357,7 @@ describe('NewServiceDetailPage', () => {
     it('should trim service detail name before validation', () => {
       render(<NewServiceDetailPage />);
       
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: '  Test  ' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
@@ -368,7 +368,7 @@ describe('NewServiceDetailPage', () => {
       render(<NewServiceDetailPage />);
       
       const longName = 'A'.repeat(500);
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: longName } });
       
       expect(nameInput).toHaveValue(longName);
@@ -378,7 +378,7 @@ describe('NewServiceDetailPage', () => {
       render(<NewServiceDetailPage />);
       
       const longDescription = 'A'.repeat(1000);
-      const descriptionInput = screen.getByPlaceholderText('Enter service detail description');
+      const descriptionInput = screen.getByPlaceholderText('Enter item description');
       fireEvent.change(descriptionInput, { target: { value: longDescription } });
       
       expect(descriptionInput).toHaveValue(longDescription);
@@ -388,7 +388,7 @@ describe('NewServiceDetailPage', () => {
       render(<NewServiceDetailPage />);
       
       const specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-      const nameInput = screen.getByPlaceholderText('Enter service detail name');
+      const nameInput = screen.getByPlaceholderText('Enter item name');
       fireEvent.change(nameInput, { target: { value: specialChars } });
       
       expect(nameInput).toHaveValue(specialChars);
@@ -405,7 +405,7 @@ describe('NewServiceDetailPage', () => {
       
       render(<NewServiceDetailPage />);
       
-      fireEvent.change(screen.getByPlaceholderText('Enter service detail name'), { target: { value: 'Test' } });
+      fireEvent.change(screen.getByPlaceholderText('Enter item name'), { target: { value: 'Test' } });
       
       const submitButton = screen.getByText('Submit').closest('button');
       fireEvent.click(submitButton!);

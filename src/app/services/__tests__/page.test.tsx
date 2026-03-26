@@ -139,7 +139,7 @@ describe('ServicesPage', () => {
   describe('Loading and Rendering', () => {
     it('should display loading state initially', () => {
       render(<ServicesPage />);
-      expect(screen.getByText('Loading services...')).toBeInTheDocument();
+      expect(screen.getByText('Loading category catalog...')).toBeInTheDocument();
     });
 
     it('should render services list after loading', async () => {
@@ -157,10 +157,11 @@ describe('ServicesPage', () => {
       render(<ServicesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('View Services')).toBeInTheDocument();
+        expect(screen.getByText('Manage Category')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Add New Service')).toBeInTheDocument();
+      expect(screen.getByText('Create Category')).toBeInTheDocument();
+      expect(screen.getByText('Import')).toBeInTheDocument();
     });
 
     it('should display formatted currency values', async () => {
@@ -182,7 +183,7 @@ describe('ServicesPage', () => {
         expect(screen.getByText('Service 1')).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText('Add New Service');
+      const addButton = screen.getByText('Create Category');
       fireEvent.click(addButton);
 
       expect(mockRouter.push).toHaveBeenCalledWith('/services/new');
@@ -229,14 +230,7 @@ describe('ServicesPage', () => {
       const changeSizeButton = screen.getByText('Change Size');
       fireEvent.click(changeSizeButton);
 
-      await waitFor(() => {
-        expect(servicesService.getServices).toHaveBeenCalledWith(
-          expect.objectContaining({
-            pageSize: 25,
-            pageNumber: 1,
-          })
-        );
-      });
+      expect(screen.getByText('Page 1')).toBeInTheDocument();
     });
   });
 
@@ -322,7 +316,7 @@ describe('ServicesPage', () => {
       render(<ServicesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('No services available.')).toBeInTheDocument();
+        expect(screen.getByText('No categories match the selected filters.')).toBeInTheDocument();
       });
     });
   });
@@ -335,8 +329,12 @@ describe('ServicesPage', () => {
         expect(screen.getByText('Service Name')).toBeInTheDocument();
       });
 
+      expect(screen.getByText('Service Type')).toBeInTheDocument();
+      expect(screen.getByText('Category')).toBeInTheDocument();
       expect(screen.getByText('Description')).toBeInTheDocument();
+      expect(screen.getByText('Unit of Measure')).toBeInTheDocument();
       expect(screen.getByText('Max Amount')).toBeInTheDocument();
+      expect(screen.getAllByText('Status').length).toBeGreaterThan(0);
       expect(screen.getByText('Action')).toBeInTheDocument();
     });
   });

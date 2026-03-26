@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { User, Bell, HelpCircle, LogOut, Power, FileQuestion, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authService } from "@/services/auth-service";
+import { CompanySelector } from "@/components/layout/company-selector";
 
 interface HeaderProps {
   title?: string;
@@ -16,13 +17,15 @@ export function Header({ title, breadcrumbs, onFlowDiagramClick }: HeaderProps) 
   const pathname = usePathname();
   const router = useRouter();
   const isDashboard = pathname === "/dashboard";
-  const [user, setUser] = useState<{name?: string, loginId?: string, email?: string} | null>(null);
+  const [user, setUser] = useState<{name?: string, loginId?: string, email?: string, role?: string} | null>(null);
   const [notificationCount, setNotificationCount] = useState(3);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showProfileCard, setShowProfileCard] = useState(false);
   const [showHelpMenu, setShowHelpMenu] = useState(false);
   const profileCardRef = useRef<HTMLDivElement>(null);
   const helpMenuRef = useRef<HTMLDivElement>(null);
+  // TODO: read super-admin access from auth context when context wiring is available.
+  const isSuperAdmin = !!user?.role?.toLowerCase().includes('admin');
 
   useEffect(() => {
     // Get user data from auth service
@@ -110,6 +113,8 @@ export function Header({ title, breadcrumbs, onFlowDiagramClick }: HeaderProps) 
 
         {/* Actions */}
         <div className="flex items-center space-x-4">
+          <CompanySelector variant="header" isSuperAdmin={isSuperAdmin} />
+
           {/* Help */}
           <div 
             className="relative flex-shrink-0" 

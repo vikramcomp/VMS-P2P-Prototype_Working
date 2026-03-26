@@ -37,7 +37,8 @@ export default function WorkflowsPage({
   isTesting = false,
 }: { isTesting?: boolean } = {}) {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"new" | "old">("new");
+  // Locked to "old" — New Workflow tab has been removed.
+  const [activeTab, setActiveTab] = useState<"old" | "new">("old");
   const [selectedWorkflows, setSelectedWorkflows] = useState<number[]>([]);
   const [showActionMenu, setShowActionMenu] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -225,15 +226,10 @@ export default function WorkflowsPage({
     );
   };
 
-  // Load workflows when component mounts, active tab changes, or pagination/sorting parameters change
+  // Load old workflows when component mounts or pagination/sorting parameters change.
   useEffect(() => {
-    fetchWorkflows(
-      activeTab === "old",
-      currentPage,
-      pageSize
-    );
+    fetchWorkflows(true, currentPage, pageSize);
   }, [
-    activeTab,
     currentPage,
     pageSize,
     sortColumn,
@@ -1098,29 +1094,7 @@ export default function WorkflowsPage({
               </CardTitle> */}
 
               <div className="flex flex-col lg:flex-row lg:space-x-4 lg:justify-between w-full gap-4">
-                {/* Tab Navigation */}
-                <div className="flex items-center justify-center bg-gray-100 p-1 rounded-lg w-full lg:w-auto">
-                  <button
-                    onClick={handleNewTabClick}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex-1 lg:flex-none ${
-                      activeTab === "new"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-900"
-                    }`}
-                  >
-                    New Workflow List
-                  </button>
-                  <button
-                    onClick={handleOldTabClick}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex-1 lg:flex-none ${
-                      activeTab === "old"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-900"
-                    }`}
-                  >
-                    Old Workflow List
-                  </button>
-                </div>
+                {/* Tab switcher removed — page shows Old Workflow List only */}
               </div>
             </div>
             {/* <CardDescription>

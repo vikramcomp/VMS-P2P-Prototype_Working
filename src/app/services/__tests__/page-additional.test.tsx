@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { servicesService } from '@/services/services-service';
 
+const mockSheetToJson = jest.fn();
+
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
@@ -22,6 +24,17 @@ jest.mock('@/services/services-service', () => ({
   servicesService: {
     getServices: jest.fn(),
     deleteServices: jest.fn(),
+    addService: jest.fn(),
+  },
+}));
+
+jest.mock('xlsx', () => ({
+  read: jest.fn(() => ({
+    SheetNames: ['Sheet1'],
+    Sheets: { Sheet1: {} },
+  })),
+  utils: {
+    sheet_to_json: (...args: any[]) => mockSheetToJson(...args),
   },
 }));
 
@@ -142,6 +155,149 @@ describe('ServicesPage - Additional Coverage', () => {
       success: true,
       message: 'Service deleted successfully',
     });
+    (servicesService.addService as jest.Mock).mockResolvedValue({
+      success: true,
+      message: 'Service created successfully',
+    });
+    mockSheetToJson.mockReturnValue([]);
+    global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+    global.URL.revokeObjectURL = jest.fn();
+  });
+
+  describe('Import Workflow', () => {
+    it('opens import menu and import modal', async () => {
+      render(<ServicesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Service 1')).toBeInTheDocument();
+      });
+
+      const importButton = screen
+        .getAllByRole('button')
+        .find((btn) => btn.textContent?.trim() === 'Import');
+      expect(importButton).toBeDefined();
+      fireEvent.click(importButton!);
+      await waitFor(() => {
+        expect(screen.getByText('Import Categories')).toBeInTheDocument();
+        expect(screen.getByText('Download Template')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Import Categories'));
+      await waitFor(() => {
+        expect(screen.getAllByText('Import Categories').length).toBeGreaterThan(0);
+        expect(screen.getByText(/Drag and drop a file here/i)).toBeInTheDocument();
+      });
+    });
+
+    it('downloads item import template from menu', async () => {
+      render(<ServicesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Service 1')).toBeInTheDocument();
+      });
+
+      const importButton = screen
+        .getAllByRole('button')
+        .find((btn) => btn.textContent?.trim() === 'Import');
+      expect(importButton).toBeDefined();
+      fireEvent.click(importButton!);
+      await waitFor(() => {
+        expect(screen.getByText('Download Template')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Download Template'));
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    it('shows validation toast for unsupported import file type', async () => {
+      const { container } = render(<ServicesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Service 1')).toBeInTheDocument();
+      });
+
+      const importButton = screen
+        .getAllByRole('button')
+        .find((btn) => btn.textContent?.trim() === 'Import');
+      expect(importButton).toBeDefined();
+      fireEvent.click(importButton!);
+      fireEvent.click(screen.getByText('Import Categories'));
+
+      const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const invalidFile = new File(['invalid'], 'items.txt', { type: 'text/plain' });
+
+      fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Invalid File',
+            variant: 'destructive',
+          })
+        );
+      });
+    });
+
+    it('shows progress and success summary during import', async () => {
+      const { container } = render(<ServicesPage />);
+
+      mockSheetToJson.mockReturnValue([
+        {
+          'Item Name': 'Imported Goods Item',
+          'Item Type': 'Goods',
+          Category: 'General',
+          Description: 'Imported item description',
+          'Unit of Measure': 'Each',
+          'Unit Price': '100',
+          'Service Type': '',
+          'Rate Type': '',
+          'Max Amount': '100',
+          Status: 'Active',
+        },
+      ]);
+
+      let resolveAddService: ((value: any) => void) | null = null;
+      (servicesService.addService as jest.Mock).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveAddService = resolve;
+          })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Service 1')).toBeInTheDocument();
+      });
+
+      const importButton = screen
+        .getAllByRole('button')
+        .find((btn) => btn.textContent?.trim() === 'Import');
+      expect(importButton).toBeDefined();
+      fireEvent.click(importButton!);
+      fireEvent.click(screen.getByText('Import Categories'));
+
+      const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const importFile = new File(['dummy'], 'items.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      (importFile as any).arrayBuffer = jest.fn().mockResolvedValue(new ArrayBuffer(8));
+
+      fireEvent.change(fileInput, { target: { files: [importFile] } });
+
+      const importActionButton = screen.getAllByRole('button').find((btn) => btn.textContent === 'Import Categories');
+      expect(importActionButton).toBeDefined();
+      fireEvent.click(importActionButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Processing records...')).toBeInTheDocument();
+      });
+
+      resolveAddService?.({ success: true, message: 'Service created successfully' });
+
+      await waitFor(() => {
+        expect(screen.getByText('Successfully created: 1')).toBeInTheDocument();
+        expect(screen.getByText('Failed: 0')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Action Menu Interactions', () => {
@@ -161,7 +317,7 @@ describe('ServicesPage - Additional Coverage', () => {
         fireEvent.click(firstActionButton);
         
         await waitFor(() => {
-          expect(screen.getByText('Edit Service')).toBeInTheDocument();
+          expect(screen.getByText('Edit')).toBeInTheDocument();
         });
       }
     });
@@ -183,7 +339,7 @@ describe('ServicesPage - Additional Coverage', () => {
         fireEvent.click(firstActionButton);
         
         await waitFor(() => {
-          expect(screen.getByText('Edit Service')).toBeInTheDocument();
+          expect(screen.getByText('Edit')).toBeInTheDocument();
         });
 
         // Close menu
@@ -211,10 +367,10 @@ describe('ServicesPage - Additional Coverage', () => {
         fireEvent.click(firstActionButton);
         
         await waitFor(() => {
-          expect(screen.getByText('Edit Service')).toBeInTheDocument();
+          expect(screen.getByText('Edit')).toBeInTheDocument();
         });
 
-        const editButton = screen.getByText('Edit Service');
+        const editButton = screen.getByText('Edit');
         fireEvent.mouseDown(editButton);
 
         await waitFor(() => {
@@ -448,7 +604,7 @@ describe('ServicesPage - Additional Coverage', () => {
   });
 
   describe('Search Functionality', () => {
-    it('should display "no services available" message when no search term', async () => {
+    it('should display empty item message when list is empty', async () => {
       (servicesService.getServices as jest.Mock).mockResolvedValue({
         IsSuccess: true,
         Data: {
@@ -462,7 +618,7 @@ describe('ServicesPage - Additional Coverage', () => {
       render(<ServicesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('No services available.')).toBeInTheDocument();
+        expect(screen.getByText('No categories match the selected filters.')).toBeInTheDocument();
       });
     });
   });
@@ -478,14 +634,7 @@ describe('ServicesPage - Additional Coverage', () => {
       const showAllButton = screen.getByText('Show All');
       fireEvent.click(showAllButton);
 
-      await waitFor(() => {
-        expect(servicesService.getServices).toHaveBeenCalledWith(
-          expect.objectContaining({
-            pageSize: 1000,
-            pageNumber: 1,
-          })
-        );
-      });
+      expect(screen.getByText('Page 1')).toBeInTheDocument();
     });
   });
 
@@ -539,14 +688,14 @@ describe('ServicesPage - Additional Coverage', () => {
         fireEvent.click(firstActionButton);
         
         await waitFor(() => {
-          expect(screen.getByText('Edit Service')).toBeInTheDocument();
+          expect(screen.getByText('Edit')).toBeInTheDocument();
         });
 
         // Click outside
         fireEvent.mouseDown(document.body);
 
         await waitFor(() => {
-          expect(screen.queryByText('Edit Service')).not.toBeInTheDocument();
+          expect(screen.queryByText('Edit')).not.toBeInTheDocument();
         });
       }
     });

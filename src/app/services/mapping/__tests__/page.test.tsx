@@ -60,13 +60,13 @@ describe('MappingServicesPage Component', () => {
 
   it('renders the component', () => {
     render(<MappingServicesPage />);
-    expect(screen.getByText('Mapping Services')).toBeInTheDocument();
+    expect(screen.getByText('Mapping Sub-Categories')).toBeInTheDocument();
   });
 
   it('displays the page title', async () => {
     render(<MappingServicesPage />);
     await waitFor(() => {
-      expect(screen.getByText('Mapping Services')).toBeInTheDocument();
+      expect(screen.getByText('Mapping Sub-Categories')).toBeInTheDocument();
     });
   });
 
@@ -83,13 +83,13 @@ describe('MappingServicesPage Component', () => {
     render(<MappingServicesPage />);
     
     await waitFor(() => {
-      expect(screen.getByText('Select Group')).toBeInTheDocument();
+      expect(screen.getByText('Select Category')).toBeInTheDocument();
     });
   });
 
   it('shows loading state for groups', async () => {
     render(<MappingServicesPage />);
-    expect(screen.getByText('Loading groups...')).toBeInTheDocument();
+    expect(screen.getByText('Loading categories...')).toBeInTheDocument();
   });
 
   it('displays groups in dropdown', async () => {
@@ -104,14 +104,14 @@ describe('MappingServicesPage Component', () => {
   it('displays Available Services section', async () => {
     render(<MappingServicesPage />);
     await waitFor(() => {
-      expect(screen.getByText('Available Services')).toBeInTheDocument();
+      expect(screen.getByText('Available Sub-Categories')).toBeInTheDocument();
     });
   });
 
   it('displays Mapped Services section', async () => {
     render(<MappingServicesPage />);
     await waitFor(() => {
-      expect(screen.getByText('Mapped Services')).toBeInTheDocument();
+      expect(screen.getByText('Mapped Sub-Categories')).toBeInTheDocument();
     });
   });
 
@@ -172,8 +172,8 @@ describe('MappingServicesPage Component', () => {
   it('shows service counts', async () => {
     render(<MappingServicesPage />);
     await waitFor(() => {
-      const availableText = screen.getAllByText(/services available/i);
-      const mappedText = screen.getAllByText(/services mapped/i);
+      const availableText = screen.getAllByText(/sub-categories available/i);
+      const mappedText = screen.getAllByText(/sub-categories mapped/i);
       expect(availableText.length).toBeGreaterThan(0);
       expect(mappedText.length).toBeGreaterThan(0);
     });
@@ -254,7 +254,7 @@ describe('MappingServicesPage Component', () => {
     render(<MappingServicesPage />);
     
     await waitFor(() => {
-      expect(screen.getByText(/Error loading groups/i)).toBeInTheDocument();
+      expect(screen.getByText(/Error loading categories/i)).toBeInTheDocument();
     });
   });
 
@@ -272,7 +272,7 @@ describe('MappingServicesPage Component', () => {
     fireEvent.change(dropdown, { target: { value: '1' } });
     
     await waitFor(() => {
-      expect(screen.getByText(/Error loading services/i)).toBeInTheDocument();
+      expect(screen.getByText(/Error loading sub-categories/i)).toBeInTheDocument();
     });
   });
 
@@ -348,8 +348,8 @@ describe('MappingServicesPage Component', () => {
     fireEvent.change(dropdown, { target: { value: '1' } });
     
     await waitFor(() => {
-      expect(screen.getByText('No services available')).toBeInTheDocument();
-      expect(screen.getByText('No services mapped')).toBeInTheDocument();
+      expect(screen.getByText('No sub-categories available')).toBeInTheDocument();
+      expect(screen.getByText('No sub-categories mapped')).toBeInTheDocument();
     });
   });
 

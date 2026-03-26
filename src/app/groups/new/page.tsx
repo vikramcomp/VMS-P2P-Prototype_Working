@@ -15,6 +15,9 @@ import { useStudios } from "@/hooks/use-studios";
 import { groupsService } from "@/services/groups-service";
 import { useToast } from "@/hooks/use-toast";
 import { AddGroupRequest } from "@/types/groups";
+import { useCompanyContext } from "@/context/CompanyContext";
+import { addLocalBusinessUnit } from "@/data/seedData/businessUnits";
+import { Lock, Building2 } from "lucide-react";
 
 interface NewGroupPageProps {
   isTesting?: boolean;
@@ -25,6 +28,8 @@ export default function NewGroupPage({
 }: NewGroupPageProps = {}) {
   const router = useRouter();
   const { toast } = useToast();
+  // TODO: submit activeCompany.id as companyId in API payload.
+  const { activeCompany } = useCompanyContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     studioName: "",
@@ -127,9 +132,20 @@ export default function NewGroupPage({
       const response = await groupsService.addGroup(addGroupRequest);
 
       if (response.success) {
+        // TODO: replace local addition cache with POST /api/business-units and list refetch.
+        addLocalBusinessUnit({
+          id: `bu-local-${Date.now()}`,
+          companyId: activeCompany?.id,
+          code: trimSpaces(formData.name).slice(0, 8).toUpperCase().replaceAll(" ", "-"),
+          name: trimSpaces(formData.name),
+          location: studioName,
+          description: trimSpaces(formData.description),
+          isActive: formData.status === 1,
+        });
+
         toast({
           title: "Success",
-          description: "Group created successfully!",
+          description: "Branch created successfully!",
           variant: "success",
         });
         // Wait briefly so toast is visible before navigating
@@ -174,7 +190,7 @@ export default function NewGroupPage({
         <div className="space-y-6" data-testid="new-group-page">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <Tooltip content="Go back to Groups" position="bottom">
+            <Tooltip content="Go back to Branches" position="bottom">
               <Button
                 variant="outline"
                 size="icon"
@@ -186,10 +202,10 @@ export default function NewGroupPage({
             </Tooltip>
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                Add New Group
+                Add New Branch
               </h3>
               <p className="text-muted-foreground text-xs">
-                Create a new user group with specific permissions
+                Create a new branch for the selected company
               </p>
             </div>
           </div>
@@ -198,10 +214,26 @@ export default function NewGroupPage({
             {/* Basic Information */}
             <Card className="shadow-sm border border-gray-200">
               <CardContent className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Company (Tenant)
+                  </label>
+                  <div className="flex h-10 items-center justify-between rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-700">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Building2 className="h-4 w-4 text-vendor-600" />
+                      <span className="truncate">{activeCompany?.name || "No company selected"}</span>
+                    </div>
+                    <Lock className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Switch company from the top-right selector to create under a different tenant.
+                  </p>
+                </div>
+
                 <div className="grid gap-6 md:grid-cols-3">
                   <div>
                     <label htmlFor="group-name" className="block text-sm font-medium mb-2 text-gray-700">
-                      Group Name <span className="text-red-500">*</span>
+                      Branch Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="group-name"
@@ -211,7 +243,7 @@ export default function NewGroupPage({
                         handleInputChange("name", e.target.value)
                       }
                       onBlur={() => handleBlur("name")}
-                      placeholder="Enter group name"
+                      placeholder="Enter branch name"
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 ${
                         formData.name.trim() !== "" &&
                         formData.name.trim().length < 2
@@ -225,19 +257,19 @@ export default function NewGroupPage({
                         <div className="mt-1 text-red-600 text-xs flex items-center gap-2">
                           <AlertCircle className="h-4 w-4 flex-shrink-0" />
                           <span>
-                            Group name must be at least 2 characters long
+                            Branch name must be at least 2 characters long
                           </span>
                         </div>
                       )}
                     {formData.name.trim().length >= 2 && (
                       <div className="mt-1 text-green-600 text-xs">
-                        ✓ Valid group name
+                        ✓ Valid branch name
                       </div>
                     )}
                   </div>
                   <div>
                     <label htmlFor="studio-name" className="block text-sm font-medium mb-2 text-gray-700">
-                      Studio Name <span className="text-red-500">*</span>
+                      Location <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <select
@@ -265,8 +297,8 @@ export default function NewGroupPage({
                       >
                         <option value="" disabled className="text-gray-500">
                           {loading
-                            ? "Loading studios..."
-                            : "Select Studio Name"}
+                            ? "Loading locations..."
+                            : "Select Location"}
                         </option>
                         {studios && studios.length > 0
                           ? studios.map((studio: any) => {
@@ -326,7 +358,7 @@ export default function NewGroupPage({
                     {/* Helper text */}
                     {!error && !loading && studios && studios.length > 0 && (
                       <div className="mt-1 text-gray-500 text-xs">
-                        Choose the studio this group belongs to
+                        Choose the location for this branch
                       </div>
                     )}
                   </div>
@@ -368,7 +400,7 @@ export default function NewGroupPage({
                       handleInputChange("description", e.target.value)
                     }
                     onBlur={() => handleBlur("description")}
-                    placeholder="Enter group description"
+                    placeholder="Enter branch description"
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0152ef] focus:border-blue-500 text-gray-900 text-sm hover:border-gray-400 transition-colors duration-200 resize-vertical"
                   />

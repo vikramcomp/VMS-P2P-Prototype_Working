@@ -132,7 +132,7 @@ describe('ViewServiceDetailsPage', () => {
   describe('Loading and Rendering', () => {
     it('should display loading state initially', () => {
       render(<ViewServiceDetailsPage />);
-      expect(screen.getByText('Loading service details...')).toBeInTheDocument();
+      expect(screen.getByText('Loading items...')).toBeInTheDocument();
     });
 
     it('should render service details list after loading', async () => {
@@ -150,10 +150,10 @@ describe('ViewServiceDetailsPage', () => {
       render(<ViewServiceDetailsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('View Service Details')).toBeInTheDocument();
+        expect(screen.getByText('View Items')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Add New Service Detail')).toBeInTheDocument();
+      expect(screen.getByText('Add New Item')).toBeInTheDocument();
     });
   });
 
@@ -223,7 +223,7 @@ describe('ViewServiceDetailsPage', () => {
         expect(screen.getByText('Service 1')).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText('Add New Service Detail');
+      const addButton = screen.getByText('Add New Item');
       fireEvent.click(addButton);
 
       expect(mockRouter.push).toHaveBeenCalledWith('/service-details/new');
@@ -297,7 +297,7 @@ describe('ViewServiceDetailsPage', () => {
         expect(screen.getByText('Service 1')).toBeInTheDocument();
       });
 
-      const serviceDetailsHeader = screen.getByText('Service Details');
+      const serviceDetailsHeader = screen.getByText('Item Name');
       fireEvent.click(serviceDetailsHeader);
 
       await waitFor(() => {
@@ -317,7 +317,7 @@ describe('ViewServiceDetailsPage', () => {
         expect(screen.getByText('Service 1')).toBeInTheDocument();
       });
 
-      const serviceDetailsHeader = screen.getByText('Service Details');
+      const serviceDetailsHeader = screen.getByText('Item Name');
       
       // First click - ascending
       fireEvent.click(serviceDetailsHeader);
@@ -416,7 +416,7 @@ describe('ViewServiceDetailsPage', () => {
       render(<ViewServiceDetailsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('No service details found')).toBeInTheDocument();
+        expect(screen.getByText('No items found')).toBeInTheDocument();
       });
     });
   });

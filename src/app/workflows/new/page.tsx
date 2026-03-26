@@ -856,32 +856,39 @@ export default function AddNewWorkflowPage({}: AddNewWorkflowPageProps = {}) {
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        // Try to get error message from API response
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch {
-          // If parsing fails, use the default error message
-        }
-        throw new Error(errorMessage);
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
 
-      const data = await response.json();
+      if (!response.ok || data?.IsSuccess === false || data?.success === false) {
+        const apiMessage =
+          data?.message ||
+          data?.Message ||
+          data?.error ||
+          data?.Error ||
+          `HTTP error! status: ${response.status}`;
+        throw new Error(apiMessage);
+      }
+
       __helper_handleWorkflowSuccess(data);
     } catch (error) {
-      console.error("Failed to create workflow:", error);
+      const rawMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to create workflow. Please try again.";
+      const description = /same combination|already exists/i.test(rawMessage)
+        ? "This workflow combination already exists. Please choose a different Division, Service Mapping, or Payment Mode."
+        : rawMessage;
+
+      console.warn("Workflow creation validation failed:", rawMessage);
 
       // Show error toast
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to create workflow. Please try again.",
+        description,
         variant: "destructive",
       });
     } finally {

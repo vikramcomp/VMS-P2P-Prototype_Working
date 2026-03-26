@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Pagination from '@/components/ui/pagination';
-import { Building2, Plus, MoreVertical, Edit, Loader2, AlertCircle, Trash2, Download, X, Filter, Power, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { Plus, MoreVertical, Edit, Loader2, AlertCircle, Trash2, Download, X, Filter, Power, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Tooltip } from '../ui/tooltip';
@@ -13,6 +13,25 @@ import { vendorsService } from '@/services/vendors-service';
 import type { Vendor } from '@/types/vendors';
 import type { PageSize } from '@/types/groups';
 import { envConfig } from '@/config/env-validation';
+import { ImportButton } from '@/components/import/import-button';
+import { ImportModal, ImportModalConfig } from '@/components/import/import-modal';
+import {
+  VENDOR_COLUMN_ALIASES,
+  VENDOR_REQUIRED_FIELDS,
+  VENDOR_TEMPLATE_HEADERS,
+  VENDOR_TEMPLATE_SAMPLE,
+  VENDOR_IMPORT_AUDIT_STORAGE_KEY,
+  VendorImportRow,
+  getPaymentCycleId,
+  buildVendorRequestBody,
+  buildVendorValidationErrors,
+} from '@/config/vendor-import-config';
+import {
+  getRowValue,
+  downloadTextFile,
+  ImportErrorRow,
+  ImportSummary,
+} from '@/utils/import-utils';
 
 interface VendorsContentProps {
   isTesting?: boolean;
@@ -54,6 +73,11 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
   const [valueOptions, setValueOptions] = useState<Array<{ id: string; name: string }>>([
     { id: '-1', name: 'Select Value' }
   ]);
+  const [paymentCycles, setPaymentCycles] = useState<Array<{ id: number; name: string }>>([]);
+
+  // Import Modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Fetch vendor types
   const fetchVendorTypes = async () => {
@@ -126,6 +150,34 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
     }
   };
 
+  const fetchPaymentCycles = async () => {
+    try {
+      const response = await fetch(`${envConfig.apiBaseUrl}/payment-cycle-report/payment-cycles`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const dataArray = result.items || result.data || result;
+
+        if (Array.isArray(dataArray)) {
+          const cycles = dataArray
+            .map((cycle: any) => ({
+              id: Number(cycle.paymentCycleMasterId || cycle.paymentCycleId || cycle.id),
+              name: String(cycle.paymentCycleName || cycle.name || cycle.paymentCycle || '').trim(),
+            }))
+            .filter((cycle: { id: number; name: string }) => Number.isFinite(cycle.id) && cycle.name.length > 0);
+          setPaymentCycles(cycles);
+        }
+      }
+    } catch (fetchError) {
+      console.error('Error fetching payment cycles:', fetchError);
+    }
+  };
+
   // Close action menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -144,7 +196,206 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
   useEffect(() => {
     fetchVendorTypes();
     fetchCriteriaOptions();
+    fetchPaymentCycles();
   }, []);
+
+  // Vendor import configuration
+  const vendorImportConfig: ImportModalConfig = {
+    moduleName: 'Vendors',
+    title: 'Import Vendors',
+    description: 'Upload a .xlsx or .csv file to import vendors. Mandatory columns: Vendor Name, Vendor Code, Contact First Name, Email Id, Country Id, State Id, City, Payment Cycle.',
+    columnAliases: VENDOR_COLUMN_ALIASES,
+    requiredFields: VENDOR_REQUIRED_FIELDS,
+    templateHeaders: VENDOR_TEMPLATE_HEADERS,
+    templateSample: VENDOR_TEMPLATE_SAMPLE,
+    accept: '.xlsx,.csv',
+  };
+
+  const getCurrentUserName = (): string => {
+    try {
+      const rawUser = localStorage.getItem('vms_user_data');
+      if (!rawUser) return 'Unknown User';
+      const parsed = JSON.parse(rawUser);
+      return parsed?.name || parsed?.userName || parsed?.loginId || parsed?.email || 'Unknown User';
+    } catch {
+      return 'Unknown User';
+    }
+  };
+
+  const writeImportAuditLog = (entry: {
+    fileName: string;
+    totalRows: number;
+    successCount: number;
+    failedCount: number;
+    status: 'success' | 'partial' | 'error';
+  }) => {
+    try {
+      const existingLogs = localStorage.getItem(VENDOR_IMPORT_AUDIT_STORAGE_KEY);
+      const parsedLogs = existingLogs ? JSON.parse(existingLogs) : [];
+      const logEntry = {
+        action: 'VENDOR_IMPORT',
+        uploadedBy: getCurrentUserName(),
+        uploadedAt: new Date().toISOString(),
+        ...entry,
+      };
+
+      const nextLogs = [logEntry, ...(Array.isArray(parsedLogs) ? parsedLogs : [])].slice(0, 50);
+      localStorage.setItem(VENDOR_IMPORT_AUDIT_STORAGE_KEY, JSON.stringify(nextLogs));
+      console.info('Vendor import audit log:', logEntry);
+    } catch (auditError) {
+      console.error('Failed to write import audit log:', auditError);
+    }
+  };
+
+  const mapRawRowsToVendorImportRows = (rows: Record<string, unknown>[]): VendorImportRow[] => {
+    return rows.map((row, index) => ({
+      rowNumber: index + 2,
+      raw: row,
+      vendorName: getRowValue(row, VENDOR_COLUMN_ALIASES.vendorName),
+      vendorCode: getRowValue(row, VENDOR_COLUMN_ALIASES.vendorCode),
+      vendorType: getRowValue(row, VENDOR_COLUMN_ALIASES.vendorType),
+      contactFirstName: getRowValue(row, VENDOR_COLUMN_ALIASES.contactFirstName),
+      contactLastName: getRowValue(row, VENDOR_COLUMN_ALIASES.contactLastName),
+      emailId: getRowValue(row, VENDOR_COLUMN_ALIASES.emailId),
+      officePhone: getRowValue(row, VENDOR_COLUMN_ALIASES.officePhone),
+      mobile: getRowValue(row, VENDOR_COLUMN_ALIASES.mobile),
+      countryId: getRowValue(row, VENDOR_COLUMN_ALIASES.countryId),
+      stateId: getRowValue(row, VENDOR_COLUMN_ALIASES.stateId),
+      city: getRowValue(row, VENDOR_COLUMN_ALIASES.city),
+      zipCode: getRowValue(row, VENDOR_COLUMN_ALIASES.zipCode),
+      address1: getRowValue(row, VENDOR_COLUMN_ALIASES.address1),
+      paymentCycle: getRowValue(row, VENDOR_COLUMN_ALIASES.paymentCycle),
+      pan: getRowValue(row, VENDOR_COLUMN_ALIASES.pan),
+      salesTaxNo: getRowValue(row, VENDOR_COLUMN_ALIASES.salesTaxNo),
+      serviceTaxNo: getRowValue(row, VENDOR_COLUMN_ALIASES.serviceTaxNo),
+      comments: getRowValue(row, VENDOR_COLUMN_ALIASES.comments),
+    }));
+  };
+
+  const validateVendorImportRows = (rows: VendorImportRow[]): {
+    validRows: VendorImportRow[];
+    invalidRows: ImportErrorRow[];
+  } => {
+    const invalidRows: ImportErrorRow[] = [];
+    const validRows: VendorImportRow[] = [];
+    const seenVendors = new Set<string>();
+
+    for (const row of rows) {
+      const rowErrors = buildVendorValidationErrors(row, vendors, seenVendors, paymentCycles);
+
+      if (rowErrors.length > 0) {
+        invalidRows.push({
+          rowNumber: row.rowNumber,
+          reason: rowErrors.join('; '),
+          raw: row.raw,
+        });
+        continue;
+      }
+
+      const normalizedName = row.vendorName.trim().toLowerCase();
+      seenVendors.add(normalizedName);
+      validRows.push(row);
+    }
+
+    return { validRows, invalidRows };
+  };
+
+  const handleDownloadTemplate = () => {
+    const content = `${VENDOR_TEMPLATE_HEADERS.join(',')}\n${VENDOR_TEMPLATE_SAMPLE.join(',')}`;
+    downloadTextFile(content, 'vendors_import_template.csv');
+  };
+
+  const handleImportVendors = async (file: File, parsedRows: Record<string, unknown>[]) => {
+    setIsImporting(true);
+    try {
+      const vendorImportRows = mapRawRowsToVendorImportRows(parsedRows);
+      const { validRows, invalidRows } = validateVendorImportRows(vendorImportRows);
+      
+      const failedRows: ImportErrorRow[] = [...invalidRows];
+      let successCount = 0;
+
+      for (const row of validRows) {
+        try {
+          const paymentCycleId = getPaymentCycleId(row.paymentCycle, paymentCycles);
+          if (paymentCycleId === null) {
+            failedRows.push({
+              rowNumber: row.rowNumber,
+              reason: 'Invalid payment cycle value',
+              raw: row.raw,
+            });
+            continue;
+          }
+
+          const requestBody = buildVendorRequestBody(row, paymentCycleId);
+          await vendorsService.createVendor(requestBody);
+          successCount += 1;
+        } catch (createError) {
+          const reason = createError instanceof Error ? createError.message : 'Failed to create vendor';
+          failedRows.push({
+            rowNumber: row.rowNumber,
+            reason,
+            raw: row.raw,
+          });
+        }
+      }
+
+      const totalRows = parsedRows.length;
+      const failedCount = failedRows.length;
+      const status: ImportSummary['status'] = successCount === 0
+        ? 'error'
+        : failedCount > 0
+        ? 'partial'
+        : 'success';
+
+      writeImportAuditLog({
+        fileName: file.name,
+        totalRows,
+        successCount,
+        failedCount,
+        status: status === 'idle' ? 'error' : status,
+      });
+
+      if (successCount > 0) {
+        await fetchVendors();
+      }
+
+      if (status === 'success') {
+        toast({
+          title: 'Import Completed',
+          description: `${successCount} vendors imported successfully.`,
+          variant: 'success',
+        });
+      } else if (status === 'partial') {
+        toast({
+          title: 'Import Partially Completed',
+          description: `${successCount} imported, ${failedCount} failed. Download the error file for details.`,
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Import Failed',
+          description: 'No vendors were imported. Please review the error file and try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (importError) {
+      const message = importError instanceof Error ? importError.message : 'Import processing failed';
+      toast({
+        title: 'Import Failed',
+        description: message,
+        variant: 'destructive',
+      });
+      writeImportAuditLog({
+        fileName: file.name,
+        totalRows: 0,
+        successCount: 0,
+        failedCount: 0,
+        status: 'error',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   // Fetch vendors
   const fetchVendors = async (overrideFilters?: { criteria?: string; value?: string; vendorTypeId?: number }) => {
@@ -248,6 +499,7 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
       handleDeleteConfirm();
       handleDeleteCancel();
       handleExportVendors();
+      handleDownloadTemplate();
       handleBulkDeleteClick();
       handleBulkDeleteConfirm();
       handleBulkDeleteCancel();
@@ -612,8 +864,13 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
               </Tooltip>
             </span>
           )} 
-          <Button 
-            variant='outline' 
+          <ImportButton
+            onImportClick={() => setShowImportModal(true)}
+            disabled={loading || isImporting}
+          />
+
+          <Button
+            variant='outline'
             onClick={handleExportVendors}
             disabled={loading}
             className="text-xs font-normal bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 gap-2"
@@ -997,6 +1254,16 @@ export default function VendorsContent({ isTesting = false }: VendorsContentProp
         confirmText={bulkDeleting ? "Deleting..." : `Delete ${selectedVendors.length} Vendor${selectedVendors.length === 1 ? '' : 's'}`}
         cancelText="Cancel"
         variant="danger"
+      />
+
+      {/* Import Vendors Modal */}
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        config={vendorImportConfig}
+        onImport={handleImportVendors}
+        onDownloadTemplate={handleDownloadTemplate}
+        isImporting={isImporting}
       />
     </div>
   );

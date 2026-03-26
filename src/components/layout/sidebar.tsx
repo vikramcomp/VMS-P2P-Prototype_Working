@@ -9,6 +9,8 @@ import { DESIGN_SYSTEM } from '@/utils/design-system';
 import { authService } from '@/services/auth-service';
 import { useSidebar } from './sidebar-context';
 import { Tooltip } from '@/components/ui/tooltip';
+import { useCompany } from '@/context/CompanyContext';
+import { useToast } from '@/hooks/use-toast';
 import { 
   LayoutDashboard, 
   Users, 
@@ -34,10 +36,13 @@ import {
   BarChart,
   DollarSign,
   ClipboardList,
-  FolderTree,
   FileSpreadsheet,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  ShieldCheck,
+  ScrollText,
+  Building,
+  Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -45,137 +50,156 @@ interface SidebarProps {
   readonly className?: string;
 }
 
+// PROTOTYPE: reordered for Setup → Transaction → Reports flow
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, moduleId: 0 },
-  { 
-    name: 'Groups', 
-    icon: UsersRound, 
+
+  // ── Organisation Setup ───────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Organisation Setup' },
+
+  {
+    name: 'Company Master',
+    icon: ShieldCheck,
+    hasDropdown: true,
+    moduleId: 0,
+    // PROTOTYPE: visible to all for demo
+    // superAdminOnly: true,
+    children: [
+      { name: 'Company Accounts',    href: '/super-admin/companies',        icon: Building2 },
+      { name: 'Onboard New Company', href: '/super-admin/companies/create', icon: Plus      },
+      // PROTOTYPE: hidden until pages are fully built
+      // { name: 'System Users',    href: '/super-admin/system-users',    icon: Users      },
+      // { name: 'Global Settings', href: '/super-admin/global-settings', icon: Settings   },
+      // { name: 'Audit Logs',      href: '/super-admin/audit-logs',      icon: ScrollText },
+    ],
+  },
+  {
+    name: 'Branches',
+    icon: UsersRound,
     hasDropdown: true,
     moduleId: 1,
     children: [
-      { name: 'View Groups',  href: '/groups', icon: UsersRound },
-      { name: 'Add New Group', href: '/groups/new', icon: UserPlus }
-    ]
+      { name: 'Manage Branches',    href: '/groups',     icon: UsersRound },
+      { name: 'Add New Branch',     href: '/groups/new', icon: UserPlus   },
+    ],
   },
-  { 
-    name: 'Subgroups', 
-    icon: FolderTree, 
+  {
+    name: 'Departments',
+    icon: Building,
     hasDropdown: true,
-    moduleId: 13,
+    moduleId: 0,
     children: [
-      { name: 'View Subgroups',  href: '/subgroups', icon: Eye },
-      { name: 'Add New Subgroups', href: '/subgroups/new', icon: Plus },
-      { name: 'Mapping Subgroups', href: '/subgroups/mapping', icon: Share2 }
-    ]
+      { name: 'Manage Departments', href: '/departments', icon: Eye },
+      { name: 'Add New Department', href: '/departments/new', icon: Plus },
+    ],
   },
-  { 
-    name: 'Services', 
-    icon: Settings, 
+
+  // ── Masters ───────────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Masters' },
+
+  {
+    name: 'Product Categories',
+    icon: Settings,
     hasDropdown: true,
     moduleId: 4,
     children: [
-      { name: 'View Services',  href: '/services', icon: Eye },
-      { name: 'Add New Service', href: '/services/new', icon: Plus },
-      { name: 'Mapping Services', href: '/services/mapping', icon: Share2 }
-    ]
+      { name: 'View Categories',  href: '/services',         icon: Eye    },
+      { name: 'Add New Category', href: '/services/new',     icon: Plus   },
+    ],
   },
-  { 
-    name: 'Service Details', 
-    icon: ListTree, 
+  {
+    name: 'Sub-Categories',
+    icon: Tag,
+    hasDropdown: true,
+    moduleId: 0,
+    children: [
+      { name: 'Manage Sub-Categories', href: '/subgroups', icon: Eye },
+      { name: 'Sub-Category Mapping', href: '/services/mapping', icon: Share2 },
+    ],
+  },
+  {
+    name: 'Product Items',
+    icon: ListTree,
     hasDropdown: true,
     moduleId: 5,
     children: [
-      { name: 'View Service Details',  href: '/service-details', icon: Eye },
-      { name: 'Add New Service Details', href: '/service-details/new', icon: Plus },
-      { name: 'Mapping Service Details', href: '/service-details/mapping', icon: Share2 }
-    ]
+      { name: 'View Items',   href: '/service-details',         icon: Eye    },
+      { name: 'Add New Item', href: '/service-details/new',     icon: Plus   },
+      { name: 'Item Mapping', href: '/service-details/mapping', icon: Share2 },
+    ],
   },
-  { 
-    name: 'Users', 
-    icon: Users, 
-    hasDropdown: true,
-    moduleId: 2,
-    children: [
-      { name: 'View Users',  href: '/users', icon: Users },
-      { name: 'Add New User', href: '/users/new', icon: UserPlus }
-    ]
-  },
-  { 
-    name: 'Workflows', 
-    icon: Workflow, 
-    hasDropdown: true,
-    moduleId: 3,
-    children: [
-      { name: 'View Workflows',  href: '/workflows', icon: Workflow },
-      { name: 'Add New Workflow', href: '/workflows/new', icon: Plus }
-    ]
-  },
-    { 
-    name: 'Vendors', 
-    icon: Building2, 
+  {
+    name: 'Vendor Master',
+    icon: Building2,
     hasDropdown: true,
     moduleId: 6,
     children: [
-      { name: 'View Vendors',  href: '/vendors', icon: Eye },
-      { name: 'Add New Vendor', href: '/vendors/new', icon: Plus }
-    ]
+      { name: 'Manage Vendors', href: '/vendors',     icon: Eye  },
+      { name: 'Add New Vendor', href: '/vendors/new', icon: Plus },
+    ],
   },
-  { 
-    name: 'Purchase Request', 
-    icon: FileText, 
+
+  // ── Users ─────────────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Users' },
+
+  {
+    name: 'Users',
+    icon: Users,
+    hasDropdown: true,
+    moduleId: 2,
+    children: [
+      { name: 'View Users',   href: '/users',     icon: Users    },
+      { name: 'Add New User', href: '/users/new', icon: UserPlus },
+    ],
+  },
+
+  // ── Workflows ───────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Workflows' },
+
+  {
+    name: 'Workflows',
+    icon: Workflow,
+    hasDropdown: true,
+    moduleId: 3,
+    children: [
+      { name: 'View Workflows',   href: '/workflows',     icon: Workflow },
+      { name: 'Add New Workflow', href: '/workflows/new', icon: Plus     },
+    ],
+  },
+
+  // ── Procurement ───────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Procurement' },
+
+  {
+    name: 'Purchase Request',
+    icon: FileText,
     hasDropdown: true,
     moduleId: 7,
     children: [
-      { name: 'View Purchase Request',  href: '/requests', icon: Eye },
-      { name: 'Add Purchase Request', href: '/requests/new', icon: Plus }
-    ]
+      { name: 'Manage Requests',      href: '/requests',     icon: Eye  },
+      { name: 'Add Purchase Request', href: '/requests/new', icon: Plus },
+    ],
   },
-  { 
-    name: 'Quotations', 
-    href: '/manage-quotations', 
-    icon: FileSpreadsheet,
-    moduleId: 8
-  },
-  { 
-    name: 'Request Approvals', 
-    href: '/approvals', 
-    icon: CheckSquare,
-    moduleId: 9
-  },
-  { 
-    name: 'Purchase Orders', 
+  { name: 'Quotations',        href: '/manage-quotations', icon: FileSpreadsheet, moduleId: 8  },
+  { name: 'Request Approvals', href: '/approvals',         icon: CheckSquare,     moduleId: 9  },
+  {
+    name: 'Purchase Orders',
     icon: ClipboardList,
     hasDropdown: true,
     moduleId: 14,
     children: [
-      { name: 'View Purchase Orders', href: '/po-list', icon: Eye },
-      { name: 'Add Purchase Order', href: '/po-list/new', icon: Plus }
-    ]
+      { name: 'View Purchase Orders', href: '/po-list',     icon: Eye  },
+      { name: 'Add Purchase Order',   href: '/po-list/new', icon: Plus },
+    ],
   },
-  { 
-    name: 'Invoices', 
-    href: '/invoices', 
-    icon: Receipt,
-    moduleId: 10
-  },
-  { 
-    name: 'Invoice Approvals', 
-    href: '/invoice-approvals', 
-    icon: FileCheck,
-    moduleId: 12
-  },
-  { 
-    name: 'Payments', 
-    href: '/manage-payments', 
-    icon: DollarSign,
-    moduleId: 11
-  },
-  { 
-    name: 'PO Report', 
-    href: '/po-report', 
-    icon: BarChart,
-    moduleId: 15
-  },
+  { name: 'Invoices',          href: '/invoices',          icon: Receipt,    moduleId: 10 },
+  { name: 'Invoice Approvals', href: '/invoice-approvals', icon: FileCheck,  moduleId: 12 },
+  { name: 'Payments',          href: '/manage-payments',   icon: DollarSign, moduleId: 11 },
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Reports' },
+
+  { name: 'PO Report', href: '/po-report', icon: BarChart, moduleId: 15 },
 ];
 
 export function Sidebar({ className }: SidebarProps) {
@@ -184,11 +208,14 @@ export function Sidebar({ className }: SidebarProps) {
   const { isCollapsed, toggleCollapse } = useSidebar();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [manualOpenDropdowns, setManualOpenDropdowns] = useState<string[]>([]);
+  const [hasUserToggledDropdown, setHasUserToggledDropdown] = useState(false);
   const [collapsedFlyout, setCollapsedFlyout] = useState<string | null>(null);
   const [flyoutPosition, setFlyoutPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const flyoutRef = React.useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<{name?: string, loginId?: string, email?: string, role?: string} | null>(null);
   const [accessibleModuleIds, setAccessibleModuleIds] = useState<number[]>([]);
+  const { activeCompany } = useCompany();
+  const { toast } = useToast();
 
   // Close flyout when clicking outside
   useEffect(() => {
@@ -240,9 +267,30 @@ export function Sidebar({ className }: SidebarProps) {
     setAccessibleModuleIds([0, ...moduleIds.filter((id: any) => id !== undefined)]);
   }, []);
 
+  // Super admin check — any role containing 'admin' (case-insensitive)
+  const isSuperAdmin = !!(user?.role?.toLowerCase().includes('admin'));
+
+  const canAccessHref = (href?: string) => {
+    if (!href) return false;
+    if (activeCompany) return true;
+    return href === '/super-admin/companies';
+  };
+
+  const showCompanyRequiredMessage = () => {
+    toast({
+      title: 'Company Required',
+      description: 'Please select a company first',
+    });
+  };
+
   // Filter navigation based on accessible modules
-  const filteredNavigation = navigation.filter(item => 
-    accessibleModuleIds.includes(item.moduleId)
+  // superAdminOnly items are shown only for admins; all others filtered by accessible module IDs.
+  // Section dividers always pass through (no moduleId).
+  const filteredNavigation = navigation.filter((item: any) =>
+    item.type === 'section' ||
+    (item.superAdminOnly
+      ? isSuperAdmin
+      : accessibleModuleIds.includes(item.moduleId))
   );
 
   // Get display name from user data
@@ -259,6 +307,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const toggleDropdown = (itemName: string) => {
+    setHasUserToggledDropdown(true);
     setManualOpenDropdowns(prev => 
       prev.includes(itemName) 
         ? [] // Close the current dropdown (and any others)
@@ -274,6 +323,22 @@ export function Sidebar({ className }: SidebarProps) {
     });
     setCollapsedFlyout(prev => prev === itemName ? null : itemName);
   };
+
+  const SidebarSection = ({ label }: { label: string }) => (
+    <div style={{
+      fontSize: '10px',
+      fontWeight: 600,
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase' as const,
+      color: 'var(--muted-foreground, #9ca3af)',
+      padding: '20px 16px 6px 16px',
+      borderTop: '1px solid var(--border, #e5e7eb)',
+      marginTop: '8px',
+      userSelect: 'none' as const,
+    }}>
+      {label}
+    </div>
+  );
 
   return (
     <>
@@ -351,17 +416,22 @@ export function Sidebar({ className }: SidebarProps) {
 
           </div>
 
-
-
           {/* Navigation */}
           <nav className={cn("flex-1 space-y-1 py-6 overflow-y-auto", isCollapsed ? "px-2" : "px-4")}>
             {filteredNavigation.map((item) => {
-              if (item.hasDropdown && item.children) {
+              if ((item as any).type === 'section') {
+                return isCollapsed ? null : <SidebarSection key={`section-${(item as any).label}`} label={(item as any).label} />;
+              }
+              if ((item as any).hasDropdown && (item as any).children) {
+                const isParentDisabled = !activeCompany && item.name !== 'Company Master';
                 const isChildActive = item.children.some(child => 
                   pathname === child.href || pathname.startsWith(child.href + '/')
                 );
-                // Always show dropdown open if any child is active OR if manually opened (only when expanded)
-                const isDropdownOpen = !isCollapsed && (isChildActive || manualOpenDropdowns.includes(item.name));
+                // Keep active menu open by default, but allow manual collapse/expand after first click.
+                const isDropdownOpen = !isCollapsed && (
+                  manualOpenDropdowns.includes(item.name) ||
+                  (!hasUserToggledDropdown && isChildActive)
+                );
                 
                 // Collapsed view - show icon with flyout menu
                 if (isCollapsed) {
@@ -370,10 +440,17 @@ export function Sidebar({ className }: SidebarProps) {
                     <div key={item.name} className="relative">
                       <Tooltip content={item.name} position="right">
                         <button
-                          onClick={(e) => handleCollapsedMenuClick(e, item.name)}
+                          onClick={(e) => {
+                            if (isParentDisabled) {
+                              showCompanyRequiredMessage();
+                              return;
+                            }
+                            handleCollapsedMenuClick(e, item.name);
+                          }}
                           className={cn(
                             'group flex items-center justify-center w-full rounded-md p-2 text-sm font-normal transition-colors',
                             'hover:bg-gray-100',
+                            isParentDisabled ? 'opacity-50 cursor-not-allowed' : '',
                             isChildActive || isFlyoutOpen
                               ? 'bg-vendor-500 text-gray-900 shadow-sm'
                               : 'text-gray-900 bg-transparent'
@@ -397,10 +474,17 @@ export function Sidebar({ className }: SidebarProps) {
                   <div key={item.name}>
                     {/* Parent dropdown item */}
                     <button
-                      onClick={() => toggleDropdown(item.name)}
+                      onClick={() => {
+                        if (isParentDisabled) {
+                          showCompanyRequiredMessage();
+                          return;
+                        }
+                        toggleDropdown(item.name);
+                      }}
                       className={cn(
                         'group flex items-center justify-between w-full rounded-md px-3 py-2 text-sm font-normal transition-colors',
                         'hover:bg-gray-100',
+                        isParentDisabled ? 'opacity-50 cursor-not-allowed' : '',
                         isChildActive
                           ? 'bg-vendor-500 text-gray-900 shadow-sm'
                           : 'text-gray-900 bg-transparent'
@@ -430,7 +514,30 @@ export function Sidebar({ className }: SidebarProps) {
                     {isDropdownOpen && (
                       <div className="ml-6 mt-1 space-y-1">
                         {item.children.map((child) => {
+                          const isChildDisabled = !canAccessHref(child.href);
                           const isActive = pathname === child.href;
+
+                          if (isChildDisabled) {
+                            return (
+                              <Tooltip key={child.name} content="Please select a company first" position="right">
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    'group flex w-full items-center rounded-md px-3 py-2 text-sm font-normal transition-colors',
+                                    'opacity-50 cursor-not-allowed'
+                                  )}
+                                  onClick={showCompanyRequiredMessage}
+                                >
+                                  <child.icon
+                                    className="mr-3 h-4 w-4 flex-shrink-0"
+                                    style={{ color: '#111827' }}
+                                  />
+                                  {child.name}
+                                </button>
+                              </Tooltip>
+                            );
+                          }
+
                           return (
                             <Link
                               key={child.name}
@@ -468,13 +575,23 @@ export function Sidebar({ className }: SidebarProps) {
                 
                 // Collapsed view - show only icon with tooltip
                 if (isCollapsed) {
+                  const isDisabled = !canAccessHref(item.href);
                   return (
                     <Tooltip key={item.name} content={item.name} position="right">
-                      <Link
-                        href={item.href!}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isDisabled) {
+                            showCompanyRequiredMessage();
+                            return;
+                          }
+                          router.push(item.href!);
+                          setIsMobileMenuOpen(false);
+                        }}
                         className={cn(
                           'group flex items-center justify-center rounded-md p-2 text-sm font-normal transition-colors',
                           'hover:bg-gray-100',
+                          isDisabled ? 'opacity-50 cursor-not-allowed' : '',
                           isActive
                             ? 'bg-vendor-500 text-gray-900 shadow-sm'
                             : 'text-gray-900 bg-transparent'
@@ -483,17 +600,44 @@ export function Sidebar({ className }: SidebarProps) {
                           borderRadius: DESIGN_SYSTEM.borderRadius.button,
                           transition: DESIGN_SYSTEM.transitions.fast,
                         }}
-                        onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <item.icon
                           className="h-5 w-5 flex-shrink-0"
                           style={{ color: '#0152ef' }}
                         />
-                      </Link>
+                      </button>
                     </Tooltip>
                   );
                 }
-                
+                const isDisabled = !canAccessHref(item.href);
+
+                if (isDisabled) {
+                  return (
+                    <Tooltip key={item.name} content="Please select a company first" position="right">
+                      <button
+                        type="button"
+                        className={cn(
+                          'group flex w-full items-center rounded-md px-3 py-2 text-sm font-normal transition-colors',
+                          'opacity-50 cursor-not-allowed',
+                          'text-gray-900 bg-transparent'
+                        )}
+                        style={{
+                          borderRadius: DESIGN_SYSTEM.borderRadius.button,
+                          transition: DESIGN_SYSTEM.transitions.fast,
+                          color: '#111827',
+                        }}
+                        onClick={showCompanyRequiredMessage}
+                      >
+                        <item.icon
+                          className="mr-3 h-5 w-5 flex-shrink-0"
+                          style={{ color: '#0152ef' }}
+                        />
+                        {item.name}
+                      </button>
+                    </Tooltip>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.name}
@@ -568,7 +712,7 @@ export function Sidebar({ className }: SidebarProps) {
         >
           {/* Find the parent menu item and render its children */}
           {filteredNavigation.map((item) => {
-            if (item.name === collapsedFlyout && item.hasDropdown && item.children) {
+            if ((item as any).name === collapsedFlyout && (item as any).hasDropdown && (item as any).children) {
               return (
                 <div key={item.name}>
                   {/* Header */}
@@ -577,7 +721,22 @@ export function Sidebar({ className }: SidebarProps) {
                   </div>
                   {/* Child items */}
                   {item.children.map((child) => {
+                    const isDisabled = !canAccessHref(child.href);
                     const isActive = pathname === child.href;
+                    if (isDisabled) {
+                      return (
+                        <Tooltip key={child.name} content="Please select a company first" position="right">
+                          <button
+                            type="button"
+                            className="flex w-full items-center px-3 py-2 text-sm text-gray-700 opacity-50 cursor-not-allowed"
+                            onClick={showCompanyRequiredMessage}
+                          >
+                            <child.icon className="mr-3 h-4 w-4 flex-shrink-0" style={{ color: '#111827' }} />
+                            {child.name}
+                          </button>
+                        </Tooltip>
+                      );
+                    }
                     return (
                       <Link
                         key={child.name}

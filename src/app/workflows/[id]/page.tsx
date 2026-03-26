@@ -788,11 +788,22 @@ function ViewEditWorkflowPageContent() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
 
-      const data = await response.json();
+      if (!response.ok || data?.IsSuccess === false || data?.success === false) {
+        const apiMessage =
+          data?.message ||
+          data?.Message ||
+          data?.error ||
+          data?.Error ||
+          `HTTP error! status: ${response.status}`;
+        throw new Error(apiMessage);
+      }
       
       toast({
         title: "Success",
@@ -804,12 +815,17 @@ function ViewEditWorkflowPageContent() {
         router.push("/workflows");
       }, 1000);
     } catch (error) {
+      const rawMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to update workflow. Please try again.";
+      const description = /same combination|already exists/i.test(rawMessage)
+        ? "This workflow combination already exists. Please choose a different Division, Service Mapping, or Payment Mode."
+        : rawMessage;
+
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to update workflow. Please try again.",
+        description,
         variant: "destructive",
       });
     } finally {

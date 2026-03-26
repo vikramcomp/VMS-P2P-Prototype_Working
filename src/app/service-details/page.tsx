@@ -230,8 +230,7 @@ export default function ViewServiceDetailsPage({
       if (response.success) {
         toast({
           title: "Success",
-          description:
-            response.message || "Service detail deleted successfully",
+          description: response.message || "Item deleted successfully",
           variant: "success",
         });
         fetchServiceDetails(searchParams);
@@ -244,7 +243,7 @@ export default function ViewServiceDetailsPage({
       } else {
         toast({
           title: "Delete Failed",
-          description: response.message || "Failed to delete service detail",
+          description: response.message || "Failed to delete item",
           variant: "destructive",
         });
         setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
@@ -253,8 +252,7 @@ export default function ViewServiceDetailsPage({
       console.error("Error deleting service detail:", error);
       toast({
         title: "Error",
-        description:
-          "An unexpected error occurred while deleting the service detail",
+        description: "An unexpected error occurred while deleting the item",
         variant: "destructive",
       });
       setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
@@ -365,7 +363,7 @@ export default function ViewServiceDetailsPage({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                View Service Details
+                View Items
               </h3>
             </div>
             <Button
@@ -373,7 +371,7 @@ export default function ViewServiceDetailsPage({
               className="cus-primary-btn text-xs gap-2 bg-vendor-600 hover:bg-vendor-700"
             >
               <Plus className="h-4 w-4" />
-              <span>Add New Service Detail</span>
+              <span>Add New Item</span>
             </Button>
           </div>
 
@@ -386,7 +384,7 @@ export default function ViewServiceDetailsPage({
               {loading && (
                 <div className="flex items-center justify-center h-32">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="ml-2">Loading service details...</span>
+                  <span className="ml-2">Loading items...</span>
                 </div>
               )}
               {!loading && error && (
@@ -406,7 +404,7 @@ export default function ViewServiceDetailsPage({
                             onClick={handleSortByName}
                             className="flex items-center hover:text-blue-600 transition-colors duration-200 font-medium text-left w-full group"
                           >
-                            <span>Service Details</span>
+                            <span>Item Name</span>
                             <span className="ml-1 group-hover:text-blue-600">
                               {getSortIcon("Name")}
                             </span>
@@ -425,7 +423,7 @@ export default function ViewServiceDetailsPage({
                             <div className="flex flex-col items-center space-y-2">
                               <AlertCircle className="h-8 w-8 text-muted-foreground" />
                               <span className="text-muted-foreground">
-                                No service details found
+                                No items found
                               </span>
                             </div>
                           </TableCell>
@@ -511,7 +509,7 @@ export default function ViewServiceDetailsPage({
                                         }}
                                       >
                                         <Edit className="h-4 w-4" />
-                                        Edit Service Detail
+                                        Edit Item
                                       </button>
                                       <button
                                         onMouseDown={handleDeleteMouseDown(item)}
@@ -553,7 +551,7 @@ export default function ViewServiceDetailsPage({
           {/* Delete Confirmation Dialog */}
           <ConfirmationDialog
             isOpen={deleteDialog.isOpen}
-            title="Delete Service Detail"
+            title="Delete Item"
             message={`Are you sure you want to delete "${deleteDialog.serviceDetailName}"? This action cannot be undone.`}
             confirmText={deleteDialog.isDeleting ? "Deleting..." : "Delete"}
             cancelText="Cancel"

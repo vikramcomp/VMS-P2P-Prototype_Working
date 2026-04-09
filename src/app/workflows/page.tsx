@@ -1037,9 +1037,7 @@ export default function WorkflowsPage({
       <div className="space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
             <h3 className="text-lg font-semibold">Manage Workflows</h3>
-          </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"

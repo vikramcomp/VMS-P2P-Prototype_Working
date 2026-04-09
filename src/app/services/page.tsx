@@ -825,7 +825,7 @@ export default function ServicesPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                Manage Category
+                Manage Categories
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
                 View, manage, and maintain all categories available for procurement.

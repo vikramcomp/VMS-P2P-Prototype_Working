@@ -19,39 +19,18 @@ class EnvironmentValidator {
   ];
 
   validateEnvironment(): EnvironmentConfig {
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    
     // Check required environment variables
     const missingVars = this.requiredEnvVars.filter(
       varName => !process.env[varName]
     );
 
-    // Be more lenient in development and build time
-    if (missingVars.length > 0) {
-      const error = `Missing required environment variables: ${missingVars.join(', ')}`;
-      const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
-      
-      if (isDev) {
-        console.warn(`Development warning: ${error}. Using defaults.`);
-      } else {
-        console.warn(`Build time warning: ${error}. Using defaults.`);
-      }
-      
-      // Return default configuration without throwing error
-      return {
-        apiBaseUrl: 'https://vmsqa-ver2.compunnel.com/api',
-        appName: 'VMS - Vendor Management System',
-        nodeEnv: process.env.NODE_ENV || 'development',
-        logLevel: 'info',
-        isProduction: (process.env.NODE_ENV || 'development') === 'production',
-        isDevelopment: (process.env.NODE_ENV || 'development') === 'development'
-      };
+    if (missingVars.length > 0 && !isDev) {
+      console.warn(`Build time warning: Missing environment variables: ${missingVars.join(', ')}. Using defaults.`);
     }
 
-    // Validate NODE_ENV
     const nodeEnv = process.env.NODE_ENV || 'development';
-    const validNodeEnvs = ['development', 'production', 'test'];
-    if (!validNodeEnvs.includes(nodeEnv)) {
-      console.warn(`Invalid NODE_ENV: ${nodeEnv}. Defaulting to 'development'`);
-    }
 
     return {
       apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vmsqa-ver2.compunnel.com/api',

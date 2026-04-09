@@ -19,8 +19,8 @@ export function CompanyProvider({ children }) {
   const [activeCompany, setActiveCompanyState] = useState(null);
 
   useEffect(() => {
-    // TODO: replace localStorage bootstrap with API-driven tenant context bootstrap.
-    const storedCompanyId = localStorage.getItem(STORAGE_KEY);
+    // PROTOTYPE: persistent session-based tenant context
+    const storedCompanyId = sessionStorage.getItem(STORAGE_KEY);
     const initialCompany = storedCompanyId ? getCompanyById(storedCompanyId) : null;
     setActiveCompanyState(initialCompany || COMPANIES[0] || null);
   }, []);
@@ -28,7 +28,7 @@ export function CompanyProvider({ children }) {
   const setActiveCompany = (company) => {
     if (!company) return;
     setActiveCompanyState(company);
-    localStorage.setItem(STORAGE_KEY, company.id);
+    sessionStorage.setItem(STORAGE_KEY, company.id);
   };
 
   const value = useMemo(

@@ -363,7 +363,7 @@ export default function ViewServiceDetailsPage({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight cus-line-height">
-                View Items
+                Manage Items
               </h3>
             </div>
             <Button

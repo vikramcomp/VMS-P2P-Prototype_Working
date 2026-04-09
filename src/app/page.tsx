@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,14 +12,32 @@ export default function Home({ isTesting = false }: HomeProps = {}) {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (authService.isAuthenticated()) {
-      // If authenticated, redirect to dashboard
-      router.push('/dashboard');
-    } else {
-      // If not authenticated, redirect to login
+    console.log('Home: Checking authentication status...');
+    
+    // Set a maximum timeout of 3 seconds to force redirection
+    const timeoutId = setTimeout(() => {
+      console.warn('Home: Auth check timed out, redirecting to login as fallback');
+      router.push('/login');
+    }, 3000);
+
+    try {
+      // Check if user is authenticated
+      if (authService.isAuthenticated()) {
+        console.log('Home: User is authenticated, redirecting to dashboard');
+        clearTimeout(timeoutId);
+        router.push('/dashboard');
+      } else {
+        console.log('Home: User is not authenticated, redirecting to login');
+        clearTimeout(timeoutId);
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Home: Error checking authentication', error);
+      clearTimeout(timeoutId);
       router.push('/login');
     }
+
+    return () => clearTimeout(timeoutId);
   }, [router]);
 
   return (

@@ -6,6 +6,7 @@ import {
   EditorContextParams, 
   DropdownOption,
 } from '@/types/requests';
+import { BUSINESS_UNITS, DEPARTMENTS } from '@/data/seedData/businessUnits';
 
 interface UseRequestDropdownsReturn {
   // Data
@@ -278,6 +279,57 @@ export function useRequestDropdowns(): UseRequestDropdownsReturn {
       setIsRefetching(true);
     }
     setError(null);
+
+    const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
+    if (useMockData) {
+      console.log('🛠️ [useRequestDropdowns] Using Mock Data for Prototype');
+      // Convert businessUnits to divisions format
+      const mockDivisions = BUSINESS_UNITS.map(bu => ({
+        divisionId: bu.id,
+        divisionName: bu.name,
+        isActive: bu.isActive
+      }));
+
+      // Convert departments to subgroups format
+      const mockSubgroups = DEPARTMENTS.map(dept => ({
+        subgroupId: dept.id,
+        subgroupName: dept.name,
+        divisionId: dept.companyId, // Mapping to company for now as divisions in seed are by company
+        isActive: dept.isActive
+      }));
+
+      const mockData = {
+        divisions: mockDivisions,
+        subgroups: mockSubgroups,
+        services: [], // Add mock services if needed
+        serviceDetails: [],
+        requestTypes: [
+          { requestTypeId: 1, requestTypeName: 'Goods', isActive: true },
+          { requestTypeId: 2, requestTypeName: 'Service', isActive: true },
+          { requestTypeId: 3, requestTypeName: 'Goods & Service', isActive: true }
+        ],
+        quotationsOptions: [
+          { quotationId: 1, quotationValue: '1', isActive: true },
+          { quotationId: 2, quotationValue: '2', isActive: true },
+          { quotationId: 3, quotationValue: '3', isActive: true }
+        ],
+        specificationMaster: [
+          { specificationId: 1, specificationName: 'Technical specification', isActive: true },
+          { specificationId: 2, specificationName: 'Commercial specification', isActive: true }
+        ],
+        projectProposals: [],
+        advanceReceived: [
+          { advanceReceivedId: 1, advanceReceivedName: 'Yes', isActive: true },
+          { advanceReceivedId: 2, advanceReceivedName: 'No', isActive: true }
+        ]
+      };
+
+      setEditorContext(mockData as any);
+      setIsLoading(false);
+      setIsRefetching(false);
+      return;
+    }
 
     try {
       const response = await fetchEditorContextData(params);

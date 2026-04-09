@@ -67,12 +67,29 @@ The application integrates with a .NET 8 Web API backend with JWT authentication
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/              # Next.js app router pages
 ├── components/       # Reusable React components
 ├── services/         # API service layer
-├── types/           # TypeScript type definitions
-├── context/         # React context providers
-└── utils/           # Utility functions
+├── types/            # TypeScript type definitions
+├── context/          # React context providers
+└── utils/            # Utility functions
+docs/                 # Project documentation
+├── api/              # API specific documentation
+├── features/         # Feature-specific deep dives
+├── reports/          # Architecture and coverage reports
+└── setup/            # Setup and testing guides
+scripts/              # Utility and test scripts
+logs/                 # Build and test logs (Git ignored)
 ```
+
+## 📂 Documentation
+
+Detailed documentation is organized as follows:
+
+- [🚀 Testing Guide](docs/setup/testing.md) - How to run tests and configure thresholds.
+- [🏗️ Architecture Report](docs/reports/architecture-report.md) - System design and folder structure.
+- [✨ Features](docs/features/) - Deep dives into specific modules like Budget Allocation.
+- [📊 Reports](docs/reports/) - Coverage and execution summaries.
+- [🔗 API Documentation](docs/api/api-documentation.md) - Endpoint details and transformations.

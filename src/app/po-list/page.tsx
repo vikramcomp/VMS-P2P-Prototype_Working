@@ -739,7 +739,7 @@ export default function POListPage({ isTesting = false }: { isTesting?: boolean 
           {/* Header */}
           <div className="flex items-center justify-between mb-6 pt-0">
             <h3 className="text-lg font-semibold">
-              View and Manage Purchase Orders
+              Manage Purchase Orders
             </h3>
             <div className="flex gap-2">
               <Button

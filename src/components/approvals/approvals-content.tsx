@@ -36,6 +36,8 @@ import {
   getFormattedRequestTypes,
 } from "@/services/groups-service";
 import { subgroupsService } from "@/services/subgroups-service";
+import { mockStorage } from "@/utils/mock-storage";
+import { GetApprovalsRequest } from "@/types/approvals";
 
 // Types for Approval data
 interface Approval {
@@ -158,13 +160,20 @@ export default function ApprovalsContent({
       const currentPageSize = customPageSize || pagination.pageSize;
       const pageSize = currentPageSize === 'All' ? 10000 : Number(currentPageSize);
       
-      const requestBody = {
-        groupId: filters.groupId,
-        requestTypeId: filters.requestTypeId.length > 0 ? filters.requestTypeId[0] : -1,
-        requestStatus: filters.requestStatus,
-        subgroupId: filters.subgroupId,
-        pageNumber: page,
+      const requestBody: GetApprovalsRequest = {
+        searchText: searchText || "",
+        searchColumn: searchColumn || "",
         pageSize: pageSize,
+        pageNumber: page,
+        ignorePaging: currentPageSize === 'All',
+        sortColumn: "",
+        sortType: "",
+        filter: {
+          groupId: filters.groupId,
+          requestTypeId: filters.requestTypeId.length > 0 ? filters.requestTypeId[0] : -1,
+          requestStatus: filters.requestStatus,
+          subgroupId: filters.subgroupId,
+        }
       };
 
       logger.info("Fetching approvals with request:", requestBody);

@@ -23,6 +23,7 @@ class ApiClient {
     backwardCompatibility: true,
     maxDepth: 10
   };
+  private useMockData: boolean = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
   constructor() {
     this.client = axios.create({
@@ -70,7 +71,10 @@ class ApiClient {
             // Skip client-side operations in SSR
           } else {
             localStorage.removeItem('vms_auth_token');
-            globalThis.window.location.href = '/login';
+            // Only redirect if not already on the login page to avoid infinite loops
+            if (globalThis.window.location.pathname !== '/login') {
+              globalThis.window.location.href = '/login';
+            }
           }
         }
         return Promise.reject(error);
@@ -208,10 +212,7 @@ export const apiClient = new ApiClient();
 
 // Utility function to build API URLs
 export const buildApiUrl = (endpoint: string): string => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!baseUrl) {
-    throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
   // Remove trailing slashes from base URL and leading slashes from endpoint
   const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
   const cleanEndpoint = endpoint.replace(/^\/+/, '');
@@ -295,7 +296,10 @@ export const authFetch = async (
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_TOKEN_KEY);
-      window.location.href = '/login';
+      // Only redirect if not already on the login page to avoid infinite loops
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
   }
   

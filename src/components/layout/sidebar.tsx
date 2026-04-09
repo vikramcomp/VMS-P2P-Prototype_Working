@@ -62,15 +62,9 @@ const navigation = [
     icon: ShieldCheck,
     hasDropdown: true,
     moduleId: 0,
-    // PROTOTYPE: visible to all for demo
-    // superAdminOnly: true,
     children: [
       { name: 'Company Accounts',    href: '/super-admin/companies',        icon: Building2 },
       { name: 'Onboard New Company', href: '/super-admin/companies/create', icon: Plus      },
-      // PROTOTYPE: hidden until pages are fully built
-      // { name: 'System Users',    href: '/super-admin/system-users',    icon: Users      },
-      // { name: 'Global Settings', href: '/super-admin/global-settings', icon: Settings   },
-      // { name: 'Audit Logs',      href: '/super-admin/audit-logs',      icon: ScrollText },
     ],
   },
   {
@@ -103,7 +97,7 @@ const navigation = [
     hasDropdown: true,
     moduleId: 4,
     children: [
-      { name: 'View Categories',  href: '/services',         icon: Eye    },
+      { name: 'Manage Categories', href: '/services',         icon: Eye    },
       { name: 'Add New Category', href: '/services/new',     icon: Plus   },
     ],
   },
@@ -123,7 +117,7 @@ const navigation = [
     hasDropdown: true,
     moduleId: 5,
     children: [
-      { name: 'View Items',   href: '/service-details',         icon: Eye    },
+      { name: 'Manage Items',   href: '/service-details',         icon: Eye    },
       { name: 'Add New Item', href: '/service-details/new',     icon: Plus   },
       { name: 'Item Mapping', href: '/service-details/mapping', icon: Share2 },
     ],
@@ -139,8 +133,8 @@ const navigation = [
     ],
   },
 
-  // ── Users ─────────────────────────────────────────────────────────────────
-  { type: 'section' as const, label: 'Users' },
+  // ── Users & Workflows ─────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Users & Workflows' },
 
   {
     name: 'Users',
@@ -148,21 +142,17 @@ const navigation = [
     hasDropdown: true,
     moduleId: 2,
     children: [
-      { name: 'View Users',   href: '/users',     icon: Users    },
+      { name: 'Manage Users',   href: '/users',     icon: Users    },
       { name: 'Add New User', href: '/users/new', icon: UserPlus },
     ],
   },
-
-  // ── Workflows ───────────────────────────────────────────────────────────
-  { type: 'section' as const, label: 'Workflows' },
-
   {
     name: 'Workflows',
     icon: Workflow,
     hasDropdown: true,
     moduleId: 3,
     children: [
-      { name: 'View Workflows',   href: '/workflows',     icon: Workflow },
+      { name: 'Manage Workflows',  href: '/workflows',     icon: Workflow },
       { name: 'Add New Workflow', href: '/workflows/new', icon: Plus     },
     ],
   },
@@ -188,10 +178,14 @@ const navigation = [
     hasDropdown: true,
     moduleId: 14,
     children: [
-      { name: 'View Purchase Orders', href: '/po-list',     icon: Eye  },
+      { name: 'Manage Purchase Orders', href: '/po-list',     icon: Eye  },
       { name: 'Add Purchase Order',   href: '/po-list/new', icon: Plus },
     ],
   },
+
+  // ── Finance ───────────────────────────────────────────────────────────────
+  { type: 'section' as const, label: 'Finance' },
+
   { name: 'Invoices',          href: '/invoices',          icon: Receipt,    moduleId: 10 },
   { name: 'Invoice Approvals', href: '/invoice-approvals', icon: FileCheck,  moduleId: 12 },
   { name: 'Payments',          href: '/manage-payments',   icon: DollarSign, moduleId: 11 },
@@ -424,8 +418,8 @@ export function Sidebar({ className }: SidebarProps) {
               }
               if ((item as any).hasDropdown && (item as any).children) {
                 const isParentDisabled = !activeCompany && item.name !== 'Company Master';
-                const isChildActive = item.children.some(child => 
-                  pathname === child.href || pathname.startsWith(child.href + '/')
+                const isChildActive = (item.children ?? []).some(child => 
+                  pathname === (child.href ?? "") || pathname.startsWith((child.href ?? "") + '/')
                 );
                 // Keep active menu open by default, but allow manual collapse/expand after first click.
                 const isDropdownOpen = !isCollapsed && (
@@ -460,10 +454,12 @@ export function Sidebar({ className }: SidebarProps) {
                             transition: DESIGN_SYSTEM.transitions.fast,
                           }}
                         >
-                          <item.icon
-                            className="h-5 w-5 flex-shrink-0"
-                            style={{ color: '#0152ef' }}
-                          />
+                          {item.icon && (
+                            <item.icon
+                              className="h-5 w-5 flex-shrink-0"
+                              style={{ color: '#0152ef' }}
+                            />
+                          )}
                         </button>
                       </Tooltip>
                     </div>
@@ -497,10 +493,12 @@ export function Sidebar({ className }: SidebarProps) {
                       }}
                     >
                       <div className="flex items-center">
-                        <item.icon
-                          className="mr-3 h-5 w-5 flex-shrink-0"
-                          style={{ color: '#0152ef' }}
-                        />
+                        {item.icon && (
+                          <item.icon
+                            className="mr-3 h-5 w-5 flex-shrink-0"
+                            style={{ color: '#0152ef' }}
+                          />
+                        )}
                         {item.name}
                       </div>
                       {isDropdownOpen ? (
@@ -511,7 +509,7 @@ export function Sidebar({ className }: SidebarProps) {
                     </button>
                     
                     {/* Dropdown menu items */}
-                    {isDropdownOpen && (
+                    {isDropdownOpen && item.children && (
                       <div className="ml-6 mt-1 space-y-1">
                         {item.children.map((child) => {
                           const isChildDisabled = !canAccessHref(child.href);
@@ -528,10 +526,12 @@ export function Sidebar({ className }: SidebarProps) {
                                   )}
                                   onClick={showCompanyRequiredMessage}
                                 >
-                                  <child.icon
-                                    className="mr-3 h-4 w-4 flex-shrink-0"
-                                    style={{ color: '#111827' }}
-                                  />
+                                  {child.icon && (
+                                    <child.icon
+                                      className="mr-3 h-4 w-4 flex-shrink-0"
+                                      style={{ color: '#111827' }}
+                                    />
+                                  )}
                                   {child.name}
                                 </button>
                               </Tooltip>
@@ -601,10 +601,12 @@ export function Sidebar({ className }: SidebarProps) {
                           transition: DESIGN_SYSTEM.transitions.fast,
                         }}
                       >
-                        <item.icon
-                          className="h-5 w-5 flex-shrink-0"
-                          style={{ color: '#0152ef' }}
-                        />
+                        {item.icon && (
+                          <item.icon
+                            className="h-5 w-5 flex-shrink-0"
+                            style={{ color: '#0152ef' }}
+                          />
+                        )}
                       </button>
                     </Tooltip>
                   );
@@ -656,10 +658,12 @@ export function Sidebar({ className }: SidebarProps) {
                     }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <item.icon
-                      className="mr-3 h-5 w-5 flex-shrink-0"
-                      style={{ color: '#0152ef' }}
-                    />
+                    {item.icon && (
+                      <item.icon
+                        className="mr-3 h-5 w-5 flex-shrink-0"
+                        style={{ color: '#0152ef' }}
+                      />
+                    )}
                     {item.name}
                   </Link>
                 );
@@ -711,8 +715,9 @@ export function Sidebar({ className }: SidebarProps) {
           }}
         >
           {/* Find the parent menu item and render its children */}
-          {filteredNavigation.map((item) => {
+          {filteredNavigation.map((item: any) => {
             if ((item as any).name === collapsedFlyout && (item as any).hasDropdown && (item as any).children) {
+              const children = (item as any).children as any[];
               return (
                 <div key={item.name}>
                   {/* Header */}
@@ -720,7 +725,7 @@ export function Sidebar({ className }: SidebarProps) {
                     {item.name}
                   </div>
                   {/* Child items */}
-                  {item.children.map((child) => {
+                  {children.map((child) => {
                     const isDisabled = !canAccessHref(child.href);
                     const isActive = pathname === child.href;
                     if (isDisabled) {

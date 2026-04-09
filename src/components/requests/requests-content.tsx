@@ -37,6 +37,7 @@ import { requestsService } from "../../services/requests-service";
 import { logger } from "../../utils/logger";
 import { errorHandler } from "../../utils/error-handler";
 import { envConfig } from "@/config/env-validation";
+import { mockStorage } from "@/utils/mock-storage";
 
 // Types for Request data
 interface Request {
@@ -286,6 +287,42 @@ export default function RequestsContent({ isTesting = false }: { isTesting?: boo
         showingTo: 0,
       });
     } finally {
+      const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+      if (useMockData) {
+        console.log('🛠️ [RequestsContent] Merging Mock Data');
+        const mockPRs = mockStorage.getAll('requests');
+        const transformedMockPRs = mockPRs.map((pr: any) => ({
+          id: pr.id,
+          requestNumber: pr.prId || `PR-MOCK-${pr.id}`,
+          requestName: pr.request || 'Mock Request',
+          requestType: pr.requestType || 'Goods',
+          requestDescription: pr.description || '',
+          group: pr.requestGroup || '',
+          subgroup: pr.subgroup || '',
+          projectProposalId: pr.projectProposalId || '',
+          requestStatus: pr.status || 'Pending',
+          detailedRequestStatus: pr.status === 'Pending' ? 'Awaiting Approval' : 'Draft',
+          createdOn: new Date().toISOString().split('T')[0],
+          totalAging: 0,
+          status: pr.status === 'Pending' ? '1' : '0',
+          statusText: pr.status || 'Pending'
+        }));
+        
+        setRequests(prev => {
+          // Avoid duplicates by checking IDs
+          const existingIds = new Set(prev.map(r => r.id));
+          const newMockPRs = transformedMockPRs.filter(m => !existingIds.has(m.id));
+          return [...newMockPRs, ...prev];
+        });
+
+        if (mockPRs.length > 0) {
+          setPagination(prev => ({
+            ...prev,
+            totalRecords: prev.totalRecords + transformedMockPRs.length,
+            totalPages: Math.ceil((prev.totalRecords + transformedMockPRs.length) / (typeof prev.pageSize === 'number' ? prev.pageSize : 10))
+          }));
+        }
+      }
       setLoading(false);
     }
   };

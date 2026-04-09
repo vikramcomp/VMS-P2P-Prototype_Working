@@ -7,6 +7,20 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/branches/mapping',
+        destination: '/groups',
+        permanent: false,
+      },
+      {
+        source: '/departments/mapping',
+        destination: '/departments',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

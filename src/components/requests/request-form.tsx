@@ -13,6 +13,10 @@ import { useRequestDropdowns } from '../../hooks/use-request-dropdowns';
 import { AddNewRequestFormData, PRLineItem } from '../../types/requests';
 import { requestsService } from '../../services/requests-service';
 import { authService } from '../../services/auth-service';
+import { HierarchyContextBar } from '../common/hierarchy-context-bar';
+import { mockStorage } from '@/utils/mock-storage';
+import { getBusinessUnitById } from '@/data/seedData/businessUnits';
+import { getDepartmentById } from '@/data/seedData/businessUnits';
 
 interface RequestFormProps {
   mode: 'add' | 'view' | 'edit';
@@ -693,7 +697,36 @@ export default function RequestForm({ mode, requestId, initialData, isTesting = 
 
     setIsSubmitting(true);
 
+    const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
     try {
+      if (useMockData) {
+        console.log('🛠️ [RequestForm] Saving to Mock Storage');
+        const mockItem = {
+          ...formData,
+          status: type === 'submit' ? 'Pending' : 'Draft',
+          requesterStatus: type === 'submit' ? 1 : 0,
+        };
+        
+        if (mode === 'add') {
+          mockStorage.save('requests', mockItem as any);
+        } else {
+          mockStorage.update('requests', requestId || 0, mockItem as any);
+        }
+
+        toast({
+          title: 'Success (Mock)',
+          description: type === 'save' 
+            ? 'Request saved as mock draft' 
+            : 'Request submitted for mock approval',
+          variant: 'success',
+        });
+        
+        router.push('/requests');
+        setIsSubmitting(false);
+        return;
+      }
+
       if (mode === 'add') {
         // Prepare request payload matching exact API structure
         const requestPayload = {
@@ -861,6 +894,12 @@ export default function RequestForm({ mode, requestId, initialData, isTesting = 
           </div>
         </div>
       </div>
+
+      {/* PROTOTYPE: Hierarchy Context */}
+      <HierarchyContextBar 
+        branchName={getBusinessUnitById(formData.requestGroup)?.name}
+        departmentName={getDepartmentById(formData.subgroup)?.name}
+      />
 
       {/* Form */}
       <Card>

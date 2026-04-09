@@ -15,6 +15,11 @@ const EXCLUDED_DOMAINS = [
   'facebook.com',
   'twitter.com',
   'linkedin.com',
+  '_next/',
+  '__nextjs_launcher',
+  '__browser_hmr',
+  'webpack-hmr',
+  'hot-update',
 ];
 
 /**
@@ -54,6 +59,11 @@ const shouldInjectAuth = (url: string): boolean => {
   // For relative URLs or same-origin requests, inject auth
   // Check if it's a relative URL (starts with /)
   if (url.startsWith('/')) {
+    // CRITICAL: Explicitly exclude internal Next.js paths starting with /_next
+    // This prevents interference with HMR and Next.js page data fetching
+    if (url.startsWith('/_next/')) {
+      return false;
+    }
     return true;
   }
 
@@ -137,7 +147,10 @@ export function FetchInterceptorProvider({ children }: { children: React.ReactNo
         // Handle 401 unauthorized - redirect to login
         if (response.status === 401) {
           localStorage.removeItem(AUTH_TOKEN_KEY);
-          window.location.href = '/login';
+          // Only redirect if not already on the login page to avoid infinite loops
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
         }
 
         return response;
